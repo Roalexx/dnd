@@ -8,34 +8,6 @@ class AbilityScoresSkills(Base):
     skills_id = Column(Integer, ForeignKey('skills.id'))
     def __repr__(self): return f"<AbilityScoresSkills {self.id}>"
 
-class BackgroundsEquipment(Base):
-    __tablename__ = 'backgrounds_equipment'
-    id = Column(Integer, primary_key=True)
-    backgrounds_id = Column(Integer, ForeignKey('backgrounds.id'))
-    equipment_id = Column(Integer, ForeignKey('equipment.id'))
-    def __repr__(self): return f"<BackgroundsEquipment {self.id}>"
-
-class BackgroundsFromEquipmentCategory(Base):
-    __tablename__ = 'backgrounds_from_equipment_category'
-    id = Column(Integer, primary_key=True)
-    backgrounds_id = Column(Integer, ForeignKey('backgrounds.id'))
-    equipment_categories_id = Column(Integer, ForeignKey('equipment_categories.id'))
-    def __repr__(self): return f"<BackgroundsFromEquipmentCategory {self.id}>"
-
-class BackgroundsFromOptionsAlignments(Base):
-    __tablename__ = 'backgrounds_from_options_alignments'
-    id = Column(Integer, primary_key=True)
-    backgrounds_id = Column(Integer, ForeignKey('backgrounds.id'))
-    alignments_id = Column(Integer, ForeignKey('alignments.id'))
-    def __repr__(self): return f"<BackgroundsFromOptionsAlignments {self.id}>"
-
-class BackgroundsStartingProficiencies(Base):
-    __tablename__ = 'backgrounds_starting_proficiencies'
-    id = Column(Integer, primary_key=True)
-    backgrounds_id = Column(Integer, ForeignKey('backgrounds.id'))
-    proficiencies_id = Column(Integer, ForeignKey('proficiencies.id'))
-    def __repr__(self): return f"<BackgroundsStartingProficiencies {self.id}>"
-
 class ClassesEquipment(Base):
     __tablename__ = 'classes_equipment'
     id = Column(Integer, primary_key=True)

@@ -2424,43 +2424,6 @@ ALTER SEQUENCE public.spells_subclasses_id_seq OWNER TO postgres;
 
 ALTER SEQUENCE public.spells_subclasses_id_seq OWNED BY public.spells_subclasses.id;
 
-
---
--- Name: starting_equipment; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.starting_equipment (
-    id integer NOT NULL,
-    class_ character varying(255),
-    equipment text,
-    url character varying(255)
-);
-
-
-ALTER TABLE public.starting_equipment OWNER TO postgres;
-
---
--- Name: starting_equipment_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.starting_equipment_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.starting_equipment_id_seq OWNER TO postgres;
-
---
--- Name: starting_equipment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.starting_equipment_id_seq OWNED BY public.starting_equipment.id;
-
-
 --
 -- Name: starting_equipment_option; Type: TABLE; Schema: public; Owner: postgres
 --
@@ -3923,15 +3886,6 @@ ALTER TABLE ONLY public.starting_equipment_option_item
 
 ALTER TABLE ONLY public.starting_equipment_option
     ADD CONSTRAINT starting_equipment_option_pkey PRIMARY KEY (id);
-
-
---
--- Name: starting_equipment starting_equipment_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.starting_equipment
-    ADD CONSTRAINT starting_equipment_pkey PRIMARY KEY (id);
-
 
 --
 -- Name: subclasses_class subclasses_class_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres

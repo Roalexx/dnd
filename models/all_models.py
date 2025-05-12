@@ -22,17 +22,6 @@ class Alignments(Base):
     url = Column(String(255))
     def __repr__(self): return f"<Alignments {self.id}>"
 
-class Backgrounds(Base):
-    __tablename__ = 'backgrounds'
-    id = Column(Integer, primary_key=True)
-    index = Column(String(255))
-    language_options = Column(Text) 
-    name = Column(String(255))
-    starting_equipment = Column(Text)
-    starting_equipment_options = Column(Text)
-    starting_proficiencies = Column(Text)
-    url = Column(String(255))
-    def __repr__(self): return f"<Backgrounds {self.id}>"
 
 class Classes(Base):
     __tablename__ = 'classes'
@@ -96,6 +85,20 @@ class Equipment(Base):
     weapon_range = Column(String(255))
     weapon_range_type = Column(String(255))
     def __repr__(self): return f"<Equipment {self.id}>"
+
+class StartingEquipmentOption(Base):
+    __tablename__ = 'starting_equipment_option'
+    id = Column(Integer, primary_key=True)
+    desc = Column(Text)
+    choose = Column(Integer)
+    def __repr__(self): return f"<StartingEquipmentOption {self.id}>"
+
+class ClassesStartingEquipment(Base):
+    __tablename__ = 'classes_starting_equipment'
+    id = Column(Integer, primary_key=True)
+    classes_id = Column(Integer, ForeignKey("classes.id"))
+    starting_equipment_id = Column(Integer, ForeignKey("equipment.id"))
+    def __repr__(self): return f"<ClassesStartingEquipment {self.id}>"
 
 class EquipmentCategories(Base):
     __tablename__ = 'equipment_categories'
