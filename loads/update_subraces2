@@ -1,0 +1,44 @@
+import psycopg2
+
+# DB bağlantısı
+conn = psycopg2.connect(
+    dbname="dnd_test",
+    user="postgres",
+    password="postgres",
+    host="localhost",
+    port="5432"
+)
+cur = conn.cursor()
+
+# Subrace ID'lerini çek
+cur.execute("SELECT id FROM subraces")
+subrace_ids = [row[0] for row in cur.fetchall()]
+
+for subrace_id in subrace_ids:
+    # subrace_proficiencies tablosunda var mı?
+    cur.execute("SELECT 1 FROM subrace_proficiencies WHERE subrace_id = %s LIMIT 1", (subrace_id,))
+    has_prof = cur.fetchone()
+
+    # subrace_traits tablosunda var mı?
+    cur.execute("SELECT 1 FROM subrace_traits WHERE subrace_id = %s LIMIT 1", (subrace_id,))
+    has_trait = cur.fetchone()
+
+    # Güncelle
+    cur.execute("""
+        UPDATE subraces
+        SET
+            proficiency_id = %s,
+            trait_id = %s
+        WHERE id = %s
+    """, (
+        subrace_id if has_prof else None,
+        subrace_id if has_trait else None,
+        subrace_id
+    ))
+
+    print(f"🔁 Güncellendi: subrace_id={subrace_id}, prof_id={subrace_id if has_prof else 'NULL'}, trait_id={subrace_id if has_trait else 'NULL'}")
+
+conn.commit()
+cur.close()
+conn.close()
+print("✅ subraces tablosu güncellendi.")
