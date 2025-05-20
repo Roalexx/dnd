@@ -1,2 +1,7 @@
 venv/
 .env
+__pycache__/
+models/__pycache__/
+models/player/__pycache__/
+models/__pycache__/models.cpython-312.pyc
+routes/__pycache__/classes.cpython-312.pyc

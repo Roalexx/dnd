@@ -4,3 +4,4 @@ dotenv
 sqlacodegen
 flask
 flasgger
+PyJWT
