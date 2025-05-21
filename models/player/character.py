@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from models import Base
@@ -14,8 +14,8 @@ class Character(Base):
     subclass_id = Column(Integer, ForeignKey("subclasses.id"), nullable=True)
     race_id = Column(Integer, ForeignKey("races.id"))
     feat_id = Column(Integer, ForeignKey("feats.id"), nullable=True)
-
-    alignment = Column(String(50))
+    
+    alignment_id = Column(Integer, ForeignKey("alignments.id"))
     level = Column(Integer, default=1)
     experience = Column(Integer, default=0)
 
@@ -43,10 +43,13 @@ class Character(Base):
     notes = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    is_admin = Column(Boolean, nullable=True) 
+
+
+    alignment = relationship("Alignments", backref="characters")
     user = relationship("User", back_populates="characters")
     spells = relationship("CharacterSpell", back_populates="character", cascade="all, delete-orphan")
     equipment = relationship("CharacterEquipment", back_populates="character", cascade="all, delete-orphan")
-    languages = relationship("CharacterLanguage", back_populates="character", cascade="all, delete-orphan")
     skills = relationship("CharacterSkill", back_populates="character", cascade="all, delete-orphan")
     languages = relationship("CharacterLanguage", back_populates="character", cascade="all, delete-orphan")
     traits = relationship("CharacterTrait", back_populates="character", cascade="all, delete-orphan")

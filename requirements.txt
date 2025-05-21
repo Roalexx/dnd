@@ -5,3 +5,5 @@ sqlacodegen
 flask
 flasgger
 PyJWT
+flask_jwt_extended
+marshmallow

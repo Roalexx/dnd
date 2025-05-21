@@ -1317,3 +1317,33 @@ class TraitsRaces(Base):
 
     races: Mapped[Optional['Races']] = relationship('Races', back_populates='traits_races')
     traits: Mapped[Optional['Traits']] = relationship('Traits', back_populates='traits_races')
+
+
+class RaceSpeedDefault(Base):
+    __tablename__ = 'race_speed_defaults'
+    __table_args__ = (
+        ForeignKeyConstraint(['race_id'], ['races.id'], ondelete='CASCADE', name='rsd_race_id_fkey'),
+        ForeignKeyConstraint(['size_id'], ['character_sizes.id'], ondelete='CASCADE', name='rsd_size_id_fkey'),
+        PrimaryKeyConstraint('id', name='race_speed_defaults_pkey')
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    race_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    size_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    base_speed: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    race: Mapped[Optional['Races']] = relationship('Races', back_populates='race_speeds')
+    size: Mapped[Optional['CharacterSize']] = relationship('CharacterSize', back_populates='race_speeds')
+
+class CharacterSize(Base):
+    __tablename__ = 'character_sizes'
+    __table_args__ = (
+        PrimaryKeyConstraint('id', name='character_sizes_pkey'),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text)
+
+    race_speeds: Mapped[List['RaceSpeedDefault']] = relationship('RaceSpeedDefault', back_populates='size')
+
