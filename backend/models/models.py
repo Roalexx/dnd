@@ -351,6 +351,8 @@ class Races(Base):
     race_proficiency_options: Mapped[List['RaceProficiencyOptions']] = relationship('RaceProficiencyOptions', back_populates='race')
     race_traits: Mapped[List['RaceTraits']] = relationship('RaceTraits', back_populates='race')
     traits_races: Mapped[List['TraitsRaces']] = relationship('TraitsRaces', back_populates='races')
+    race_speeds: Mapped[List['RaceSpeedDefault']] = relationship('RaceSpeedDefault', back_populates='race')
+
 
 
 class RuleSections(Base):

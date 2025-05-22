@@ -7,3 +7,4 @@ flasgger
 PyJWT
 flask_jwt_extended
 marshmallow
+flask-cors
