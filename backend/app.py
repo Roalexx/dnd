@@ -5,6 +5,7 @@ from routes.auth import auth_bp
 from routes.characters import character_bp
 from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
+from flask_cors import CORS
 import os
 
 load_dotenv()
@@ -13,26 +14,27 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "fallback-secret-if-not-set")
 app.config['JWT_SECRET_KEY'] = app.config['SECRET_KEY']
 jwt = JWTManager(app)
-app.config['SWAGGER'] = {
-    'title': 'DnD API',
-    'uiversion': 3,
-    'openapi': '3.0.2',
-    'components': {
-        'securitySchemes': {
-            'BearerAuth': {
-                'type': 'http',
-                'scheme': 'bearer',
-                'bearerFormat': 'JWT'
-            }
+app.config["SWAGGER"] = {
+    "title": "DnD API",
+    "uiversion": 3,
+    "swagger": "2.0",
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": "JWT token. Örnek: Bearer <token>"
         }
     },
-    'security': [
+    "security": [
         {
-            'BearerAuth': []
+            "BearerAuth": []
         }
     ]
 }
 
+
+CORS(app, supports_credentials=True)
 swagger = Swagger(app)
 
 app.register_blueprint(classes_bp)

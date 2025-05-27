@@ -8,6 +8,7 @@ class Character(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
+    dungeon_master_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     name = Column(String(100), nullable=False)
 
     class_id = Column(Integer, ForeignKey("classes.id"))
@@ -43,11 +44,13 @@ class Character(Base):
     notes = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    is_admin = Column(Boolean, nullable=True) 
-
+    is_admin = Column(Boolean, nullable=True)
 
     alignment = relationship("Alignments", backref="characters")
-    user = relationship("User", back_populates="characters")
+    user = relationship("User", back_populates="characters", foreign_keys=[user_id])
+    dungeon_master = relationship("User", back_populates="managed_characters", foreign_keys=[dungeon_master_id])
+
+    # Alt ilişkiler
     spells = relationship("CharacterSpell", back_populates="character", cascade="all, delete-orphan")
     equipment = relationship("CharacterEquipment", back_populates="character", cascade="all, delete-orphan")
     skills = relationship("CharacterSkill", back_populates="character", cascade="all, delete-orphan")
@@ -55,6 +58,3 @@ class Character(Base):
     traits = relationship("CharacterTrait", back_populates="character", cascade="all, delete-orphan")
     saving_throws = relationship("CharacterSavingThrow", back_populates="character", cascade="all, delete-orphan")
     conditions = relationship("CharacterCondition", back_populates="character", cascade="all, delete-orphan")
-
-
-

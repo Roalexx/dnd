@@ -7,7 +7,7 @@ from models.player import User
 from werkzeug.security import generate_password_hash, check_password_hash
 import re
 
-auth_bp = Blueprint('auth', __name__, url_prefix='/api/users')
+auth_bp = Blueprint('auth', __name__, url_prefix='/api')
 
 def is_valid_email(email):
     return re.match(r"[^@]+@[^@]+\.[^@]+", email)
@@ -16,11 +16,23 @@ def is_valid_email(email):
 @auth_bp.route('/register', methods=['POST'])
 @swag_from({
     'tags': ['Auth'],
-    'consumes': ['application/x-www-form-urlencoded'],
+    'summary': 'Yeni kullanıcı kaydı',
+    'consumes': ['application/json'],
     'parameters': [
-        {'name': 'username', 'in': 'formData', 'type': 'string', 'required': True},
-        {'name': 'email', 'in': 'formData', 'type': 'string', 'required': True},
-        {'name': 'password', 'in': 'formData', 'type': 'string', 'required': True}
+        {
+            'name': 'body',
+            'in': 'body',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'username': {'type': 'string'},
+                    'email': {'type': 'string'},
+                    'password': {'type': 'string'}
+                },
+                'required': ['username', 'email', 'password']
+            }
+        }
     ],
     'responses': {
         200: {'description': 'Kullanıcı başarıyla oluşturuldu'},
@@ -30,7 +42,7 @@ def is_valid_email(email):
     }
 })
 def register():
-    data = request.form
+    data = request.get_json()
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
@@ -61,27 +73,28 @@ def register():
     finally:
         session.close()
 
+
 # ---------------------- LOGIN ----------------------
 @auth_bp.route('/login', methods=['POST'])
 @swag_from({
     'tags': ['Auth'],
     'summary': 'Kullanıcı girişi',
     'description': 'Email ve şifre ile giriş yaparak JWT token döner',
-    'requestBody': {
-        'required': True,
-        'content': {
-            'application/json': {
-                'schema': {
-                    'type': 'object',
-                    'properties': {
-                        'email': {'type': 'string', 'example': 'ahmet@gmail.com'},
-                        'password': {'type': 'string', 'example': 'ahmet'}
-                    },
-                    'required': ['email', 'password']
-                }
+    'parameters': [
+        {
+            'name': 'body',
+            'in': 'body',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'email': {'type': 'string', 'example': 'ahmet@gmail.com'},
+                    'password': {'type': 'string', 'example': 'ahmet123'}
+                },
+                'required': ['email', 'password']
             }
         }
-    },
+    ],
     'responses': {
         200: {
             'description': 'Giriş başarılı - JWT token döner',

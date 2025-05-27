@@ -5,10 +5,11 @@ from config import SessionLocal
 from models.player.character import Character 
 from schemas.character_creation_schema import CharacterSchema
 from flasgger import swag_from
+from flask_cors import cross_origin
 
 character_bp = Blueprint('character', __name__, url_prefix='/api/characters')
 
-
+#-------------------Create-Character------------------------------------------
 @character_bp.route('', methods=['POST'])
 @jwt_required()
 @swag_from({
@@ -152,3 +153,166 @@ def create_character():
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
+
+
+#--------------------My-Character----------------------------------------------
+@character_bp.route('/my-characters', methods=['GET'])
+@jwt_required()
+@swag_from({
+    'tags': ['Characters'],
+    'summary': 'Kullanıcının sahip olduğu ve yönettiği karakterleri getirir',
+    'security': [{'BearerAuth': []}],
+    'description': 'JWT token ile giriş yapmış kullanıcının hem sahibi olduğu karakterler hem de dungeon master olarak yönettiği karakterler döner.',
+    'responses': {
+        200: {
+            'description': 'Karakter listesi başarıyla getirildi',
+            'examples': {
+                'application/json': {
+                    "owned_characters": [
+                        {
+                            "id": 1,
+                            "name": "Thorin",
+                            "level": 3,
+                            "class": 2,
+                            "race": 1
+                        }
+                    ],
+                    "dm_characters": [
+                        {
+                            "id": 5,
+                            "name": "Luna",
+                            "level": 7,
+                            "class": 4,
+                            "race": 3
+                        }
+                    ]
+                }
+            }
+        },
+        401: {'description': 'Yetkisiz'}
+    }
+})
+def get_my_characters():
+    user_id = get_jwt_identity()
+    session = SessionLocal()
+
+    try:
+        owned = session.query(Character).filter_by(user_id=user_id).all()
+        dm = session.query(Character).filter_by(dungeon_master_id=user_id).all()
+
+        def serialize(char):
+            return {
+                "id": char.id,
+                "name": char.name,
+                "level": char.level,
+                "experience": char.experience,
+                "class_id": char.class_id,
+                "subclass_id": char.subclass_id,
+                "race_id": char.race_id,
+                "feat_id": char.feat_id,
+                "alignment_id": char.alignment_id,
+                "strength": char.strength,
+                "dexterity": char.dexterity,
+                "constitution": char.constitution,
+                "intelligence": char.intelligence,
+                "wisdom": char.wisdom,
+                "charisma": char.charisma,
+                "hit_points": char.hit_points,
+                "armor_class": char.armor_class,
+                "speed": char.speed,
+                "gold": char.gold,
+                "silver": char.silver,
+                "copper": char.copper,
+                "personality": char.personality,
+                "ideals": char.ideals,
+                "bonds": char.bonds,
+                "flaws": char.flaws,
+                "image_url": char.image_url,
+                "notes": char.notes,
+                "created_at": char.created_at.isoformat() if char.created_at else None,
+                "is_admin": char.is_admin,
+                "user_id": char.user_id,
+                "dungeon_master_id": char.dungeon_master_id
+            }
+
+
+        return jsonify({
+            "owned_characters": [serialize(c) for c in owned],
+            "dm_characters": [serialize(c) for c in dm]
+        }), 200
+
+    finally:
+        session.close()
+
+#--------------------Get-By-ID--------------------------------------------------
+@character_bp.route('/<int:character_id>', methods=['GET'])
+@jwt_required()
+@swag_from({
+    'tags': ['Characters'],
+    'summary': 'Karakter detaylarını getirir',
+    'description': 'Belirli bir karakterin detaylarını döner. Sadece karakter sahibi veya Dungeon Master erişebilir.',
+    'parameters': [
+        {
+            'name': 'character_id',
+            'in': 'path',
+            'type': 'integer',
+            'required': True,
+            'description': 'Karakter ID'
+        }
+    ],
+    'security': [{'BearerAuth': []}],
+    'responses': {
+        200: {
+            'description': 'Karakter başarıyla bulundu',
+            'examples': {
+                'application/json': {
+                    "id": 1,
+                    "name": "Thorin",
+                    "class_id": 2,
+                    "race_id": 1,
+                    "level": 3,
+                    "hit_points": 20,
+                    "armor_class": 15,
+                    "speed": 30,
+                    "ability_scores": {
+                        "strength": 16,
+                        "dexterity": 12,
+                        "constitution": 14,
+                        "intelligence": 10,
+                        "wisdom": 13,
+                        "charisma": 8
+                    },
+                    "currency": {
+                        "gold": 10,
+                        "silver": 5,
+                        "copper": 2
+                    },
+                    "spells": [{"id": 1, "name": "Firebolt", "level": 0}],
+                    "equipment": [{"id": 2, "name": "Longsword", "quantity": 1, "category": "Weapon"}]
+                    # ... diğer alanlar ...
+                }
+            }
+        },
+        403: {'description': 'Erişim reddedildi'},
+        404: {'description': 'Karakter bulunamadı'}
+    }
+})
+def get_character_detail(character_id):
+    session = SessionLocal()
+    user_id = get_jwt_identity()
+
+    try:
+        character = session.query(Character).filter_by(id=character_id).first()
+
+        if not character:
+            return jsonify({'error': 'Karakter bulunamadı'}), 404
+
+        if int(character.user_id) != int(user_id) and int(character.dungeon_master_id or -1) != int(user_id):
+            return jsonify({'error': 'Bu karaktere erişim izniniz yok'}), 403
+
+        character_data = CharacterSchema().dump(character)
+        return jsonify(character_data), 200
+
+    finally:
+        session.close()
+
