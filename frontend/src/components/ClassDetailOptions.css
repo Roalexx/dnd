@@ -1,0 +1,12 @@
+.class-detail-options {
+  padding: 1rem;
+  margin-top: 1rem;
+  background-color: #f9f5ec;
+  border: 2px solid #bfa36f;
+  border-radius: 12px;
+}
+
+.class-detail-options select {
+  margin: 5px 0;
+  padding: 5px;
+}

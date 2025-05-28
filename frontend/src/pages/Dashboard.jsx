@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
+import "../components/Dashboard.css";
 
 function Dashboard() {
   const [ownedCharacters, setOwnedCharacters] = useState([]);
@@ -27,7 +28,7 @@ function Dashboard() {
         setDmCharacters(response.data.dm_characters);
         setLoading(false);
       } catch (error) {
-        console.error("Karakterler alınırken hata oluştu:", error);
+        console.error("Error while fetching characters:", error);
         navigate("/");
       }
     };
@@ -39,16 +40,17 @@ function Dashboard() {
     navigate(`/characters/${id}`);
   };
 
-  if (loading) return <p>Yükleniyor...</p>;
+  if (loading) return <p>Loading...</p>;
 
   return (
     <div>
       <h2>Dashboard</h2>
 
       <section>
-        <h3>Sahip Olduğun Karakterler</h3>
+        <h3>Your Characters</h3>
+        <button className="add-button" onClick={() => navigate("/create-character")}>＋</button>
         {ownedCharacters.length === 0 ? (
-          <p>Hiç karakterin yok.</p>
+          <p>You don't have any characters.</p>
         ) : (
           <ul>
             {ownedCharacters.map((char) => (
@@ -61,9 +63,9 @@ function Dashboard() {
       </section>
 
       <section>
-        <h3>Yönettiğin Karakterler (DM olarak)</h3>
+        <h3>Characters You Manage (as DM)</h3>
         {dmCharacters.length === 0 ? (
-          <p>DM olduğun karakter yok.</p>
+          <p>You are not managing any characters.</p>
         ) : (
           <ul>
             {dmCharacters.map((char) => (

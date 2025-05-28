@@ -58,3 +58,5 @@ class Character(Base):
     traits = relationship("CharacterTrait", back_populates="character", cascade="all, delete-orphan")
     saving_throws = relationship("CharacterSavingThrow", back_populates="character", cascade="all, delete-orphan")
     conditions = relationship("CharacterCondition", back_populates="character", cascade="all, delete-orphan")
+    proficiencies = relationship("CharacterProficiency", back_populates="character", cascade="all, delete-orphan")
+    features = relationship("CharacterFeature", back_populates="character", cascade="all, delete-orphan")

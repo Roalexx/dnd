@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
+
+body {
+  background-color: #fdf6e3;
+  font-family: 'MedievalSharp', cursive;
+  color: #2c1d0b;
+}
+
+h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 28px;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #8b5e3c;
+  padding-bottom: 0.3rem;
+}
+
+h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 22px;
+  color: #4e342e;
+  margin-top: 2rem;
+}
+
+ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+li {
+  background: #f2e6d9;
+  margin: 0.5rem 0;
+  padding: 10px;
+  border: 1px solid #c2a477;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+li:hover {
+  background: #e0cba5;
+}
+
+p {
+  font-style: italic;
+  color: #6d4c41;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.add-button {
+  font-size: 24px;
+  background-color: #4b2e2e;
+  color: #f5f0e1;
+  border: 2px solid #a1845c;
+  border-radius: 5px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+}
+
+.add-button:hover {
+  background-color: #5e3c3c;
+  transform: scale(1.1);
+}

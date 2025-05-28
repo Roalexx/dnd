@@ -1,0 +1,148 @@
+form {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #fdf6e3; /* parchment-like background */
+  border: 2px solid #5c4033; /* dark brown border */
+  border-radius: 10px;
+  font-family: 'Garamond', 'Times New Roman', serif;
+  box-shadow: 4px 4px 10px rgba(0,0,0,0.3);
+}
+
+h2, h3 {
+  font-family: 'Cinzel Decorative', serif;
+  color: #3b2f2f;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+label {
+  display: block;
+  margin-top: 1rem;
+  font-weight: bold;
+  color: #4b3832;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.2rem;
+  font-size: 1rem;
+  border: 1px solid #a1887f;
+  border-radius: 5px;
+  background-color: #fffaf0;
+  color: #333;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+ul {
+  padding-left: 1.2rem;
+  list-style-type: square;
+  color: #2f1b0c;
+}
+
+li {
+  margin-bottom: 0.5rem;
+}
+
+.medieval-theme {
+  font-family: 'Georgia', serif;
+  background-color: #f9f4e7;
+  padding: 30px;
+  border: 2px solid #a67c52;
+  border-radius: 12px;
+  max-width: 700px;
+  margin: 0 auto;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.medieval-theme h2, .medieval-theme h3 {
+  color: #5c3b1c;
+  text-align: center;
+}
+
+.medieval-theme label {
+  font-weight: bold;
+  color: #4b2e1a;
+}
+
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.score-row input {
+  width: 40px;
+  text-align: center;
+  font-weight: bold;
+  background-color: #fffdf6;
+}
+
+.score-row button {
+  width: 30px;
+  height: 30px;
+  font-weight: bold;
+  background-color: #d0b084;
+  border: none;
+  cursor: pointer;
+}
+
+.score-row button:disabled {
+  background-color: #e4d6c1;
+  cursor: not-allowed;
+}
+
+.remaining-points-container {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip-trigger {
+  position: relative;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.tooltip-text {
+  visibility: hidden;
+  width: 250px;
+  background-color: #333;
+  color: #fff;
+  text-align: left;
+  padding: 10px;
+  border-radius: 6px;
+  position: absolute;
+  z-index: 999;
+  top: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: normal; /* Taşma olmasın */
+  font-size: 13px;
+}
+
+.tooltip-trigger:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+.class-details-toggle-button {
+  margin-top: 0.8rem;
+  padding: 0.5rem 1rem;
+  background-color: #d0b084;
+  color: #3b2f2f;
+  border: 2px solid #a67c52;
+  border-radius: 6px;
+  font-family: 'Garamond', 'Times New Roman', serif;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.class-details-toggle-button:hover {
+  background-color: #e4c39b;
+}

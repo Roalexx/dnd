@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from models import Base
+from models.models import Proficiencies, Features
 
 # 1. CharacterSkill
 class CharacterSkill(Base):
@@ -58,3 +59,23 @@ class CharacterCondition(Base):
     is_active = Column(Boolean, default=True)
 
     character = relationship("Character", back_populates="conditions")
+
+class CharacterProficiency(Base):
+    __tablename__ = "character_proficiencies"
+
+    id = Column(Integer, primary_key=True)
+    character_id = Column(Integer, ForeignKey("characters.id", ondelete="CASCADE"))
+    proficiency_id = Column(Integer, ForeignKey("proficiencies.id"))
+
+    character = relationship("Character", back_populates="proficiencies")
+    proficiency = relationship("Proficiencies")
+
+class CharacterFeature(Base):
+    __tablename__ = "character_features"
+
+    id = Column(Integer, primary_key=True)
+    character_id = Column(Integer, ForeignKey("characters.id", ondelete="CASCADE"))
+    feature_id = Column(Integer, ForeignKey("features.id"))
+
+    character = relationship("Character", back_populates="features")
+    feature = relationship("Features")

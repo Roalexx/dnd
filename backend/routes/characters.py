@@ -35,11 +35,6 @@ character_bp = Blueprint('character', __name__, url_prefix='/api/characters')
                         'hit_points': {'type': 'integer', 'example': 28},
                         'armor_class': {'type': 'integer', 'example': 17},
                         'speed': {'type': 'integer', 'example': 30},
-                        'character_size_id': {
-                            'type': 'integer',
-                            'example': 3,
-                            'description': 'Boyut kimliği (örneğin Medium = 3)'
-                        },
                         'ability_scores': {
                             'type': 'object',
                             'properties': {
@@ -287,9 +282,14 @@ def get_my_characters():
                         "silver": 5,
                         "copper": 2
                     },
-                    "spells": [{"id": 1, "name": "Firebolt", "level": 0}],
-                    "equipment": [{"id": 2, "name": "Longsword", "quantity": 1, "category": "Weapon"}]
-                    # ... diğer alanlar ...
+                    "text_blocks": {
+                        "personality": "Kind but reserved",
+                        "ideals": "Protect the weak",
+                        "bonds": "Sworn to defend the realm",
+                        "flaws": "Impulsive",
+                        "notes": "Carries a lucky charm"
+                    },
+                    "image_url": "https://example.com/image.png"
                 }
             }
         },
@@ -310,9 +310,46 @@ def get_character_detail(character_id):
         if int(character.user_id) != int(user_id) and int(character.dungeon_master_id or -1) != int(user_id):
             return jsonify({'error': 'Bu karaktere erişim izniniz yok'}), 403
 
-        character_data = CharacterSchema().dump(character)
+        character_data = {
+            "id": character.id,
+            "name": character.name,
+            "class_id": character.class_id,
+            "subclass_id": character.subclass_id,
+            "race_id": character.race_id,
+            "feat_id": character.feat_id,
+            "alignment_id": character.alignment_id,
+            "level": character.level,
+            "experience": character.experience,
+            "hit_points": character.hit_points,
+            "armor_class": character.armor_class,
+            "speed": character.speed,
+            "image_url": character.image_url,
+            "created_at": character.created_at,
+            "dungeon_master_id": character.dungeon_master_id,
+            "is_admin": character.is_admin,
+            "ability_scores": {
+                "strength": character.strength,
+                "dexterity": character.dexterity,
+                "constitution": character.constitution,
+                "intelligence": character.intelligence,
+                "wisdom": character.wisdom,
+                "charisma": character.charisma,
+            },
+            "currency": {
+                "gold": character.gold,
+                "silver": character.silver,
+                "copper": character.copper,
+            },
+            "text_blocks": {
+                "personality": character.personality,
+                "ideals": character.ideals,
+                "bonds": character.bonds,
+                "flaws": character.flaws,
+                "notes": character.notes,
+            }
+        }
+
         return jsonify(character_data), 200
 
     finally:
         session.close()
-

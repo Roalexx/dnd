@@ -1,0 +1,40 @@
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to right, #2b2b2b, #1c1c1c);
+  padding: 12px 24px;
+  font-family: 'Cinzel', serif;
+  border-bottom: 2px solid #444;
+  color: #f3eac2;
+}
+
+.topbar-title {
+  font-size: 1.4rem;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px #000;
+}
+
+.topbar-button {
+  background-color: #7a5230;
+  color: #fff8dc;
+  border: 1px solid #5e3b1b;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: 'Cinzel', serif;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.topbar-button:hover {
+  background-color: #a4713d;
+}
+
+.topbar-title {
+  font-size: 1.4rem;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px #000;
+  color: #ffe9a9; 
+}
