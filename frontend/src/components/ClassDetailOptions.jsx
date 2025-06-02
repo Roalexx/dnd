@@ -1,83 +1,194 @@
 import React, { useEffect, useState } from "react";
-import "./ClassDetailOptions.css"; // (Opsiyonel stil için)
 
-function ClassDetailOptions({ selectedClass, classData }) {
-  const [selectedProficiencies, setSelectedProficiencies] = useState([]);
-  const [selectedEquipment, setSelectedEquipment] = useState("");
-
-  const classInfo = classData[selectedClass];
+function ClassDetailOptions({
+  selectedClass,
+  classLevelData,
+  equipmentList = [],
+  proficiencyList = [],
+  spellList = [],
+  abilityScoreList = [],
+}) {
+  const [selectedOptions, setSelectedOptions] = useState({});
 
   useEffect(() => {
-    setSelectedProficiencies([]);
-    setSelectedEquipment("");
+    setSelectedOptions({});
   }, [selectedClass]);
 
-  if (!classInfo) return null;
+  if (!selectedClass || !classLevelData) return null;
 
-  const profChoices = classInfo.proficiency_choices || { choose: 0, from: [] };
-  const equipOptions = classInfo.starting_equipment_options || { choose: 0, from: [] };
-
-  const handleProficiencyChange = (index, value) => {
-    const updated = [...selectedProficiencies];
-    updated[index] = value;
-    setSelectedProficiencies(updated);
+  const getNameFromList = (list, id) => {
+    const found = list.find((item) => item.id === id);
+    return found?.name || `#${id}`;
   };
 
-  return (
-    <div className="class-detail-options">
-      <h3>{classInfo.name} Details</h3>
+  const {
+    name,
+    hit_die,
+    spellcasting_description,
+    proficiency_choices_desc,
+    proficiency_choices_choose,
+    classes_starting_equipment = [],
+    classes_starting_equipment_options = [],
+    classes_proficiency_choices = [],
+    class_multi_classing_proficiencies = [],
+    classes_proficiencies = [],
+    classes_saving_throws = [],
+    features = [],
+    spells_classes = [],
+  } = selectedClass;
 
-      <p><strong>Hit Die:</strong> d{classInfo.hit_die}</p>
+  const {
+    cantrips_known,
+    spells_known,
+    level,
+    prof_bonus,
+    ability_score_bonuses,
+  } = classLevelData;
 
-      <p><strong>Saving Throws:</strong> {
-        Array.isArray(classInfo.saving_throws)
-        ? classInfo.saving_throws.map(s => typeof s === "string" ? s : s.name).join(", ")
-        : "N/A"
-      }</p>
+  // 🔧 spells_classes içindeki spells_id'leri al ve sadece ID olarak kullan
+  const classSpellIds = spells_classes.map((s) => s.spells_id);
+  const classSpells = classSpellIds.map((id) => ({ id }));
 
-      {/* Proficiency Dropdownları */}
-      {profChoices.choose > 0 && (
-        <div>
-          <strong>Choose {profChoices.choose} Proficiencies:</strong>
-          {[...Array(profChoices.choose)].map((_, idx) => (
+  const renderDropdowns = (title, prefix, count, options = [], desc = "") => (
+    <div style={{ marginBottom: "1rem" }}>
+      {title && <h4>{title}</h4>}
+      {desc && <p style={{ fontStyle: "italic", marginTop: "-0.5rem" }}>{desc}</p>}
+
+      {[...Array(count)].map((_, idx) => {
+        const key = `${prefix}-${idx}`;
+        const selectedValue = selectedOptions[key] || "";
+
+        const filteredOptions = options.filter((opt) => {
+          const optionId = (opt.id || opt.index || opt.name)?.toString();
+          return (
+            !Object.entries(selectedOptions).some(
+              ([k, val]) => k !== key && val === optionId
+            ) || selectedValue === optionId
+          );
+        });
+
+        return (
+          <div key={key}>
             <select
-              key={idx}
-              value={selectedProficiencies[idx] || ""}
-              onChange={(e) => handleProficiencyChange(idx, e.target.value)}
+              value={selectedValue}
+              onChange={(e) =>
+                setSelectedOptions((prev) => ({
+                  ...prev,
+                  [key]: e.target.value,
+                }))
+              }
+              style={{ display: "block", width: "100%", marginBottom: "0.5rem" }}
             >
-              <option value="">-- Select --</option>
-              {profChoices.from.map((p, i) => (
-                <option key={i} value={p} disabled={selectedProficiencies.includes(p)}>
-                  {p}
-                </option>
-              ))}
+              <option value="">Seçim {idx + 1}</option>
+              {filteredOptions.map((opt, i) => {
+                const optionId = (opt.id || opt.index || opt.name)?.toString();
+                return (
+                  <option key={i} value={optionId}>
+                    {opt.name || `Spell #${optionId}`}
+                  </option>
+                );
+              })}
             </select>
-          ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  return (
+    <div className="class-detail-container">
+      <h2>{name} - Class Details</h2>
+
+      <p><strong>Level:</strong> {level}</p>
+      <p><strong>Hit Die:</strong> d{hit_die}</p>
+      <p><strong>Proficiency Bonus:</strong> {prof_bonus}</p>
+      <p><strong>Ability Score Bonus:</strong> {ability_score_bonuses}</p>
+
+      {spellcasting_description && <p>{spellcasting_description}</p>}
+
+      {cantrips_known > 0 &&
+        renderDropdowns("Cantrip Seçimi", "cantrip", cantrips_known, classSpells)}
+
+      {spells_known > 0 &&
+        renderDropdowns("Spell Seçimi", "spell", spells_known, classSpells)}
+
+      {classes_starting_equipment.length > 0 && (
+        <p>
+          <strong>Başlangıç Ekipmanları:</strong>{" "}
+          {classes_starting_equipment
+            .map(
+              (eq) =>
+                `${getNameFromList(equipmentList, eq.equipment_id)} (x${eq.quantity})`
+            )
+            .join(", ")}
+        </p>
+      )}
+
+      {classes_starting_equipment_options.length > 0 && (
+        <div>
+          <p><strong>Başlangıç Ekipman Seçenekleri:</strong> {selectedClass.starting_equipment_options_desc || ""}</p>
+          {renderDropdowns(
+            null,
+            "equipment",
+            selectedClass.starting_equipment_options_choose || 1,
+            classes_starting_equipment_options.map((opt) => ({
+              id: opt.equipment_id,
+              name: getNameFromList(equipmentList, opt.equipment_id),
+            }))
+          )}
         </div>
       )}
 
-      {/* Ekipman Seçimi */}
-      {equipOptions.from?.length > 0 && (
-        <div style={{ marginTop: "10px" }}>
-          <strong>Choose Starting Equipment:</strong>
-          <select value={selectedEquipment} onChange={(e) => setSelectedEquipment(e.target.value)}>
-            <option value="">-- Select --</option>
-            {equipOptions.from.map((item, idx) => (
-              <option key={idx} value={item}>{item}</option>
-            ))}
-          </select>
-        </div>
+      {classes_proficiency_choices.length > 0 &&
+        renderDropdowns(
+          "Proficiency Seçimi",
+          "prof",
+          proficiency_choices_choose || 1,
+          classes_proficiency_choices.map((p) => ({
+            id: p.proficiency_id,
+            name: getNameFromList(proficiencyList, p.proficiency_id),
+          })),
+          proficiency_choices_desc
+        )}
+
+      {classes_proficiencies.length > 0 && (
+        <p>
+          <strong>Varsayılan Proficiencies:</strong>{" "}
+          {classes_proficiencies
+            .map((p) => getNameFromList(proficiencyList, p.proficiency_id))
+            .join(", ")}
+        </p>
       )}
 
-      {/* Özellikler */}
-      {classInfo.features?.length > 0 && (
-        <div style={{ marginTop: "15px" }}>
-          <strong>Features:</strong>
-          <ul>
-            {classInfo.features.map((feat, idx) => (
-              <li key={idx}><b>Lvl {feat.level} – {feat.name}:</b> {feat.desc}</li>
+      {class_multi_classing_proficiencies.length > 0 && (
+        <p>
+          <strong>Multi-Classing Proficiencies:</strong>{" "}
+          {class_multi_classing_proficiencies
+            .map((p) => getNameFromList(proficiencyList, p.proficiency_id))
+            .join(", ")}
+        </p>
+      )}
+
+      {classes_saving_throws.length > 0 && (
+        <p>
+          <strong>Saving Throws:</strong>{" "}
+          {classes_saving_throws
+            .map((s) => getNameFromList(abilityScoreList, s.ability_score_id))
+            .join(", ")}
+        </p>
+      )}
+
+      {features.filter((f) => f.level === 1).length > 0 && (
+        <div>
+          <h4>1. Seviye Özellikler</h4>
+          {features
+            .filter((f) => f.level === 1)
+            .map((f, i) => (
+              <div key={i} className="feature-box">
+                <strong>{f.name}</strong>
+                <p>{f.description}</p>
+              </div>
             ))}
-          </ul>
         </div>
       )}
     </div>

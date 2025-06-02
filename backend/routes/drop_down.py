@@ -67,6 +67,65 @@ def get_classes():
     finally:
         session.close()
 
+@classes_bp.route("/api/classes/<int:class_id>", methods=["GET"])
+@swag_from({
+    'tags': ['Dropdown'],
+    'summary': 'Get a single class with relationships',
+    'description': 'Returns a specific class and all its fields and relationships.',
+    'parameters': [
+        {
+            'name': 'class_id',
+            'in': 'path',
+            'required': True,
+            'schema': {'type': 'integer'},
+            'description': 'ID of the class to retrieve'
+        }
+    ],
+    'responses': {
+        200: {'description': 'Class data returned successfully'},
+        404: {'description': 'Class not found'}
+    }
+})
+def get_class_by_id(class_id):
+    session = SessionLocal()
+    try:
+        cls = session.query(Classes).options(*[
+            selectinload(getattr(Classes, rel.key)) for rel in Classes.__mapper__.relationships
+        ]).filter(Classes.id == class_id).first()
+
+        if not cls:
+            return jsonify({"error": "Class not found"}), 404
+
+        cls_dict = {col.name: getattr(cls, col.name) for col in Classes.__table__.columns}
+
+        for rel in Classes.__mapper__.relationships:
+            rel_data = getattr(cls, rel.key)
+            if isinstance(rel_data, list):
+                if rel.key == 'spells_classes':
+                    cls_dict[rel.key] = [
+                        {
+                            "id": item.id,
+                            "spells_id": item.spells_id,
+                            "classes_id": item.classes_id,
+                            "spell_name": item.spells.name if item.spells else None,
+                            "spell_description": item.spells.description if item.spells else None
+                        }
+                        for item in rel_data
+                    ]
+                else:
+                    cls_dict[rel.key] = [
+                        {col.name: getattr(item, col.name) for col in item.__table__.columns}
+                        for item in rel_data
+                    ]
+            elif rel_data:
+                cls_dict[rel.key] = {
+                    col.name: getattr(rel_data, col.name) for col in rel_data.__table__.columns
+                }
+
+        return jsonify(cls_dict), 200
+    finally:
+        session.close()
+
 # --------- ALIGNMENTS ---------
 alignments_bp = Blueprint("alignments", __name__)
 
@@ -85,6 +144,7 @@ def get_alignments():
         return jsonify(result), 200
     finally:
         session.close()
+
 
 # --------- CHARACTER SIZES ---------
 sizes_bp = Blueprint("character_sizes", __name__)

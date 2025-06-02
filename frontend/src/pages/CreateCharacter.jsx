@@ -18,12 +18,14 @@ const CLASS_DEFAULT_STATS = {
   Wizard: [8, 14, 14, 15, 10, 8],
 };
 
-const SCORE_COST = [0, 1, 2, 3, 4, 5, 7, 9]; // for scores 8–15
+const SCORE_COST = [0, 1, 2, 3, 4, 5, 7, 9];
 
 function CreateCharacter() {
   const [dropdowns, setDropdowns] = useState({ races: [], classes: [], alignments: [], sizes: [] });
   const [selectedClass, setSelectedClass] = useState("");
-  const [classMap, setClassMap] = useState({});
+  const [classMap, setClassMap] = useState(null);
+  const [selectedClassData, setSelectedClassData] = useState(null);
+  const [classLevelData, setClassLevelData] = useState(null);
   const [scores, setScores] = useState([8, 8, 8, 8, 8, 8]);
   const [remainingPoints, setRemainingPoints] = useState(27);
   const [showClassOptions, setShowClassOptions] = useState(false);
@@ -46,7 +48,7 @@ function CreateCharacter() {
       });
 
       const classMapTemp = {};
-      classes.data.forEach(c => classMapTemp[c.name] = c);
+      classes.data.forEach((c) => (classMapTemp[c.name.toLowerCase()] = c));
       setClassMap(classMapTemp);
     };
     fetchDropdowns();
@@ -65,6 +67,32 @@ function CreateCharacter() {
     const total = scores.reduce((acc, val) => acc + (val > 15 ? 999 : SCORE_COST[val - 8]), 0);
     setRemainingPoints(27 - total);
   }, [scores]);
+
+  useEffect(() => {
+    const fetchClassDetails = async () => {
+      if (!selectedClass || !classMap) return;
+      const token = localStorage.getItem("token");
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const normalizedClass = Object.keys(classMap).find(
+        (key) => key.toLowerCase() === selectedClass.toLowerCase()
+      );
+      const classId = classMap[normalizedClass]?.id;
+      if (!classId) return;
+
+      try {
+        const [levelRes, classRes] = await Promise.all([
+          api.get(`/class-levels/${classId}/1`, config),
+          api.get(`/classes/${classId}`, config),
+        ]);
+        setClassLevelData(levelRes.data);
+        setSelectedClassData(classRes.data);
+      } catch (error) {
+        console.error("Class verileri alınamadı:", error);
+      }
+    };
+
+    fetchClassDetails();
+  }, [selectedClass, classMap]);
 
   const updateScore = (index, delta) => {
     const newScore = scores[index] + delta;
@@ -94,18 +122,20 @@ function CreateCharacter() {
         ))}
       </select>
 
-      {selectedClass && (
+      {selectedClass && classMap && (
         <button
-  type="button"
-  className="class-details-toggle-button"
-  onClick={() => setShowClassOptions(!showClassOptions)}
->+</button>
+          type="button"
+          className="class-details-toggle-button"
+          onClick={() => setShowClassOptions(!showClassOptions)}
+        >
+          +
+        </button>
       )}
 
-      {selectedClass && showClassOptions && (
+      {selectedClass && showClassOptions && classLevelData && selectedClassData && (
         <ClassDetailOptions
-          selectedClass={selectedClass}
-          classData={classMap}
+          selectedClass={selectedClassData}
+          classLevelData={classLevelData}
         />
       )}
 
@@ -155,7 +185,8 @@ function CreateCharacter() {
           <button
             disabled={score >= 15 || SCORE_COST[score + 1 - 8] > remainingPoints}
             onClick={() => updateScore(idx, 1)}
-          >+</button>
+          >+
+          </button>
         </div>
       ))}
     </div>

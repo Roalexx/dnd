@@ -1,12 +1,23 @@
-.class-detail-options {
-  padding: 1rem;
-  margin-top: 1rem;
-  background-color: #f9f5ec;
-  border: 2px solid #bfa36f;
-  border-radius: 12px;
+.class-detail-options h3 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.5rem;
+  color: #5c4033;
+  margin-bottom: 0.5rem;
+  text-align: center;
 }
 
-.class-detail-options select {
-  margin: 5px 0;
-  padding: 5px;
+.class-detail-options ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  font-family: 'Garamond', 'Times New Roman', serif;
+  color: #3b2f2f;
+}
+
+.class-detail-options li {
+  margin-bottom: 0.5rem;
+}
+
+.class-detail-options .highlight-label {
+  font-weight: bold;
+  color: #4b3832;
 }
