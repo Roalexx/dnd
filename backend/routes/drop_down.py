@@ -100,6 +100,7 @@ def get_class_by_id(class_id):
 
         for rel in Classes.__mapper__.relationships:
             rel_data = getattr(cls, rel.key)
+
             if isinstance(rel_data, list):
                 if rel.key == 'spells_classes':
                     cls_dict[rel.key] = [
@@ -109,6 +110,26 @@ def get_class_by_id(class_id):
                             "classes_id": item.classes_id,
                             "spell_name": item.spells.name if item.spells else None,
                             "spell_description": item.spells.description if item.spells else None
+                        }
+                        for item in rel_data
+                    ]
+                elif rel.key == 'classes_starting_equipment':
+                    cls_dict[rel.key] = [
+                        {
+                            "id": item.id,
+                            "equipment_id": item.equipment_id,
+                            "equipment_quantity": item.quantity,
+                            "equipment_name": item.equipment.name if item.equipment else None
+                        }
+                        for item in rel_data
+                    ]
+                elif rel.key == 'classes_starting_equipment_options':
+                    cls_dict[rel.key] = [
+                        {
+                            "id": item.id,
+                            "equipment_id": item.equipment_id,
+                            "class_id": item.class_id,
+                            "equipment_name": item.equipment.name if item.equipment else None
                         }
                         for item in rel_data
                     ]
@@ -123,8 +144,11 @@ def get_class_by_id(class_id):
                 }
 
         return jsonify(cls_dict), 200
+
     finally:
         session.close()
+
+
 
 # --------- ALIGNMENTS ---------
 alignments_bp = Blueprint("alignments", __name__)

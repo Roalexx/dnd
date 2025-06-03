@@ -5,7 +5,6 @@ function ClassDetailOptions({
   classLevelData,
   equipmentList = [],
   proficiencyList = [],
-  spellList = [],
   abilityScoreList = [],
 }) {
   const [selectedOptions, setSelectedOptions] = useState({});
@@ -45,9 +44,12 @@ function ClassDetailOptions({
     ability_score_bonuses,
   } = classLevelData;
 
-  // 🔧 spells_classes içindeki spells_id'leri al ve sadece ID olarak kullan
-  const classSpellIds = spells_classes.map((s) => s.spells_id);
-  const classSpells = classSpellIds.map((id) => ({ id }));
+  // 🔧 spells_classes doğrudan kullanılacak
+  const classSpells = spells_classes.map((s) => ({
+    id: s.spells_id,
+    name: s.spell_name,
+    description: s.spell_description,
+  }));
 
   const renderDropdowns = (title, prefix, count, options = [], desc = "") => (
     <div style={{ marginBottom: "1rem" }}>
@@ -80,14 +82,15 @@ function ClassDetailOptions({
               style={{ display: "block", width: "100%", marginBottom: "0.5rem" }}
             >
               <option value="">Seçim {idx + 1}</option>
-              {filteredOptions.map((opt, i) => {
-                const optionId = (opt.id || opt.index || opt.name)?.toString();
-                return (
-                  <option key={i} value={optionId}>
-                    {opt.name || `Spell #${optionId}`}
-                  </option>
-                );
-              })}
+              {filteredOptions.map((opt, i) => (
+                <option
+                  key={i}
+                  value={opt.id}
+                  title={opt.description || ""}
+                >
+                  {opt.name}
+                </option>
+              ))}
             </select>
           </div>
         );
