@@ -21,7 +21,15 @@ const CLASS_DEFAULT_STATS = {
 const SCORE_COST = [0, 1, 2, 3, 4, 5, 7, 9];
 
 function CreateCharacter() {
-  const [dropdowns, setDropdowns] = useState({ races: [], classes: [], alignments: [], sizes: [] });
+  const [dropdowns, setDropdowns] = useState({
+    races: [],
+    classes: [],
+    alignments: [],
+    sizes: [],
+    proficiencies: [],
+    ability_scores: [],
+  });
+
   const [selectedClass, setSelectedClass] = useState("");
   const [classMap, setClassMap] = useState(null);
   const [selectedClassData, setSelectedClassData] = useState(null);
@@ -34,23 +42,30 @@ function CreateCharacter() {
     const fetchDropdowns = async () => {
       const token = localStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const [races, classes, alignments, sizes] = await Promise.all([
-        api.get("/races", config),
-        api.get("/classes", config),
-        api.get("/alignments", config),
-        api.get("/character-sizes", config),
-      ]);
+      const [races, classes, alignments, sizes, proficiencies, abilityScores] =
+        await Promise.all([
+          api.get("/races", config),
+          api.get("/classes", config),
+          api.get("/alignments", config),
+          api.get("/character-sizes", config),
+          api.get("/proficiencies", config),
+          api.get("/ability-scores", config),
+        ]);
+
       setDropdowns({
         races: races.data,
         classes: classes.data,
         alignments: alignments.data,
         sizes: sizes.data,
+        proficiencies: proficiencies.data,
+        ability_scores: abilityScores.data,
       });
 
       const classMapTemp = {};
       classes.data.forEach((c) => (classMapTemp[c.name.toLowerCase()] = c));
       setClassMap(classMapTemp);
     };
+
     fetchDropdowns();
   }, []);
 
@@ -64,7 +79,10 @@ function CreateCharacter() {
   }, [selectedClass]);
 
   useEffect(() => {
-    const total = scores.reduce((acc, val) => acc + (val > 15 ? 999 : SCORE_COST[val - 8]), 0);
+    const total = scores.reduce(
+      (acc, val) => acc + (val > 15 ? 999 : SCORE_COST[val - 8]),
+      0
+    );
     setRemainingPoints(27 - total);
   }, [scores]);
 
@@ -98,8 +116,13 @@ function CreateCharacter() {
     const newScore = scores[index] + delta;
     if (newScore < 8 || newScore > 15) return;
     const tempScores = [...scores];
-    const newTotal = scores.reduce((sum, val, i) =>
-      i === index ? sum + SCORE_COST[newScore - 8] : sum + SCORE_COST[val - 8], 0);
+    const newTotal = scores.reduce(
+      (sum, val, i) =>
+        i === index
+          ? sum + SCORE_COST[newScore - 8]
+          : sum + SCORE_COST[val - 8],
+      0
+    );
     if (newTotal > 27) return;
     tempScores[index] = newScore;
     setScores(tempScores);
@@ -118,7 +141,9 @@ function CreateCharacter() {
       <select onChange={(e) => setSelectedClass(e.target.value)}>
         <option value="">Select</option>
         {dropdowns.classes.map((c) => (
-          <option key={c.id} value={c.name}>{c.name}</option>
+          <option key={c.id} value={c.name}>
+            {c.name}
+          </option>
         ))}
       </select>
 
@@ -132,18 +157,27 @@ function CreateCharacter() {
         </button>
       )}
 
-      {selectedClass && showClassOptions && classLevelData && selectedClassData && (
-        <ClassDetailOptions
-          selectedClass={selectedClassData}
-          classLevelData={classLevelData}
-        />
-      )}
+      {selectedClass &&
+        showClassOptions &&
+        classLevelData &&
+        selectedClassData && (
+          <div className="detail-box">
+            <ClassDetailOptions
+              selectedClass={selectedClassData}
+              classLevelData={classLevelData}
+              proficiencyList={dropdowns.proficiencies}
+              abilityScoreList={dropdowns.ability_scores}
+            />
+          </div>
+        )}
 
       <label>Race:</label>
       <select>
         <option value="">Select</option>
         {dropdowns.races.map((r) => (
-          <option key={r.id} value={r.id}>{r.name}</option>
+          <option key={r.id} value={r.id}>
+            {r.name}
+          </option>
         ))}
       </select>
 
@@ -151,7 +185,9 @@ function CreateCharacter() {
       <select>
         <option value="">Select</option>
         {dropdowns.alignments.map((a) => (
-          <option key={a.id} value={a.id}>{a.name}</option>
+          <option key={a.id} value={a.id}>
+            {a.name}
+          </option>
         ))}
       </select>
 
@@ -159,7 +195,9 @@ function CreateCharacter() {
       <select>
         <option value="">Select</option>
         {dropdowns.sizes.map((s) => (
-          <option key={s.id} value={s.id}>{s.name}</option>
+          <option key={s.id} value={s.id}>
+            {s.name}
+          </option>
         ))}
       </select>
 
@@ -167,11 +205,12 @@ function CreateCharacter() {
       <div className="remaining-points-container">
         <p>
           Remaining Points: <strong>{remainingPoints}</strong>
-          <span className="tooltip-trigger">❓
+          <span className="tooltip-trigger">
+            ❓
             <span className="tooltip-text">
               Each ability starts at 8. You have 27 points to spend. <br />
-              Score costs: <br />
-              9 → 1pt, 10 → 2pt, 11 → 3pt, 12 → 4pt, 13 → 5pt, 14 → 7pt, 15 → 9pt.
+              Score costs: <br />9 → 1pt, 10 → 2pt, 11 → 3pt, 12 → 4pt, 13 →
+              5pt, 14 → 7pt, 15 → 9pt.
             </span>
           </span>
         </p>
@@ -180,12 +219,17 @@ function CreateCharacter() {
       {scores.map((score, idx) => (
         <div key={labels[idx]} className="score-row">
           <label>{labels[idx]}:</label>
-          <button disabled={score <= 8} onClick={() => updateScore(idx, -1)}>-</button>
+          <button disabled={score <= 8} onClick={() => updateScore(idx, -1)}>
+            -
+          </button>
           <input value={score} readOnly />
           <button
-            disabled={score >= 15 || SCORE_COST[score + 1 - 8] > remainingPoints}
+            disabled={
+              score >= 15 || SCORE_COST[score + 1 - 8] > remainingPoints
+            }
             onClick={() => updateScore(idx, 1)}
-          >+
+          >
+            +
           </button>
         </div>
       ))}

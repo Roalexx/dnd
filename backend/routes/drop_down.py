@@ -1,13 +1,19 @@
 from flask import Blueprint, jsonify
 from flasgger import swag_from
 from sqlalchemy.orm import selectinload
-from sqlalchemy.inspection import inspect
 from config import SessionLocal
-from models.models import Races, Classes, Alignments, CharacterSize
+from models.models import (
+    Races, Classes, Alignments, CharacterSize,
+    Proficiencies, AbilityScores
+)
+
+# --------- BLUEPRINTS ---------
+races_bp = Blueprint("races", __name__)
+classes_bp = Blueprint("classes", __name__)
+alignments_bp = Blueprint("alignments", __name__)
+sizes_bp = Blueprint("character_sizes", __name__)
 
 # --------- RACES ---------
-races_bp = Blueprint("races", __name__)
-
 @races_bp.route("/api/races", methods=["GET"])
 @swag_from({
     'tags': ['Dropdown'],
@@ -36,9 +42,8 @@ def get_races():
     finally:
         session.close()
 
-# --------- CLASSES ---------
-classes_bp = Blueprint("classes", __name__)
 
+# --------- CLASSES ---------
 @classes_bp.route("/api/classes", methods=["GET"])
 @swag_from({
     'tags': ['Dropdown'],
@@ -66,6 +71,7 @@ def get_classes():
         return jsonify(result), 200
     finally:
         session.close()
+
 
 @classes_bp.route("/api/classes/<int:class_id>", methods=["GET"])
 @swag_from({
@@ -145,6 +151,27 @@ def get_class_by_id(class_id):
                         }
                         for item in rel_data
                     ]
+                elif rel.key == 'class_multi_classing_proficiencies':
+                    cls_dict[rel.key] = [
+                        {
+                            "id": item.id,
+                            "proficiency_id": item.proficiency_id,
+                            "proficiency_name": item.proficiency.name if item.proficiency else None,
+                            "proficiency_type": item.proficiency.type if item.proficiency else None
+                        }
+                        for item in rel_data
+                    ]
+                elif rel.key == 'class_multi_classing_prerequisites':
+                    cls_dict[rel.key] = [
+                        {
+                            "id": item.id,
+                            "ability_score_id": item.ability_score_id,
+                            "minimum_score": item.minimum_score,
+                            "ability_score_name": item.ability_score.name if item.ability_score else None,
+                            "ability_score_description": item.ability_score.description if item.ability_score else None
+                        }
+                        for item in rel_data
+                    ]
                 else:
                     cls_dict[rel.key] = [
                         {col.name: getattr(item, col.name) for col in item.__table__.columns}
@@ -161,10 +188,7 @@ def get_class_by_id(class_id):
         session.close()
 
 
-
 # --------- ALIGNMENTS ---------
-alignments_bp = Blueprint("alignments", __name__)
-
 @alignments_bp.route("/api/alignments", methods=["GET"])
 @swag_from({
     'tags': ['Dropdown'],
@@ -183,8 +207,6 @@ def get_alignments():
 
 
 # --------- CHARACTER SIZES ---------
-sizes_bp = Blueprint("character_sizes", __name__)
-
 @sizes_bp.route("/api/character-sizes", methods=["GET"])
 @swag_from({
     'tags': ['Dropdown'],
@@ -200,3 +222,40 @@ def get_character_sizes():
         return jsonify(result), 200
     finally:
         session.close()
+
+
+# --------- PROFICIENCIES ---------
+@classes_bp.route("/api/proficiencies", methods=["GET"])
+@swag_from({
+    'tags': ['Dropdown'],
+    'summary': 'Get all proficiencies',
+    'description': 'Returns all proficiency options.',
+    'responses': {200: {'description': 'List of proficiencies'}}
+})
+def get_proficiencies():
+    session = SessionLocal()
+    try:
+        profs = session.query(Proficiencies).all()
+        result = [{col.name: getattr(p, col.name) for col in Proficiencies.__table__.columns} for p in profs]
+        return jsonify(result), 200
+    finally:
+        session.close()
+
+
+# --------- ABILITY SCORES ---------
+@classes_bp.route("/api/ability-scores", methods=["GET"])
+@swag_from({
+    'tags': ['Dropdown'],
+    'summary': 'Get all ability scores',
+    'description': 'Returns all ability scores.',
+    'responses': {200: {'description': 'List of ability scores'}}
+})
+def get_ability_scores():
+    session = SessionLocal()
+    try:
+        scores = session.query(AbilityScores).all()
+        result = [{col.name: getattr(s, col.name) for col in AbilityScores.__table__.columns} for s in scores]
+        return jsonify(result), 200
+    finally:
+        session.close()
+    

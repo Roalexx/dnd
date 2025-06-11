@@ -25,7 +25,6 @@ function ClassDetailOptions({
     classes_starting_equipment = [],
     classes_starting_equipment_options = [],
     classes_proficiency_choices = [],
-    class_multi_classing_proficiencies = [],
     classes_proficiencies = [],
     classes_saving_throws = [],
     features = [],
@@ -140,11 +139,9 @@ function ClassDetailOptions({
         <p>
           <strong>Starting Equipment:</strong>{" "}
           {classes_starting_equipment
-            .map((eq) => {
-              const name = eq.equipment_name || `#${eq.equipment_id}`;
-              const quantity = eq.equipment_quantity || eq.quantity || 1;
-              return `${name} (x${quantity})`;
-            })
+            .map(
+              (eq) => `${eq.equipment_name} (x${eq.equipment_quantity || 1})`
+            )
             .join(", ")}
         </p>
       )}
@@ -185,19 +182,6 @@ function ClassDetailOptions({
         <p>
           <strong>Default Proficiencies:</strong>{" "}
           {classes_proficiencies
-            .map(
-              (p) =>
-                proficiencyList.find((x) => x.id === p.proficiency_id)?.name ||
-                `#${p.proficiency_id}`
-            )
-            .join(", ")}
-        </p>
-      )}
-
-      {class_multi_classing_proficiencies.length > 0 && (
-        <p>
-          <strong>Multi-Classing Proficiencies:</strong>{" "}
-          {class_multi_classing_proficiencies
             .map(
               (p) =>
                 proficiencyList.find((x) => x.id === p.proficiency_id)?.name ||

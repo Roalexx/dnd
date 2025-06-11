@@ -5,12 +5,13 @@ form {
   background: #fdf6e3; /* parchment-like background */
   border: 2px solid #5c4033; /* dark brown border */
   border-radius: 10px;
-  font-family: 'Garamond', 'Times New Roman', serif;
-  box-shadow: 4px 4px 10px rgba(0,0,0,0.3);
+  font-family: "Garamond", "Times New Roman", serif;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
 }
 
-h2, h3 {
-  font-family: 'Cinzel Decorative', serif;
+h2,
+h3 {
+  font-family: "Cinzel Decorative", serif;
   color: #3b2f2f;
   margin-bottom: 1rem;
   text-align: center;
@@ -23,7 +24,9 @@ label {
   color: #4b3832;
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   width: 100%;
   padding: 0.5rem;
   margin-top: 0.2rem;
@@ -50,17 +53,18 @@ li {
 }
 
 .medieval-theme {
-  font-family: 'Georgia', serif;
+  font-family: "Georgia", serif;
   background-color: #f9f4e7;
   padding: 30px;
   border: 2px solid #a67c52;
   border-radius: 12px;
   max-width: 700px;
   margin: 0 auto;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-.medieval-theme h2, .medieval-theme h3 {
+.medieval-theme h2,
+.medieval-theme h3 {
   color: #5c3b1c;
   text-align: center;
 }
@@ -137,7 +141,7 @@ li {
   color: #3b2f2f;
   border: 2px solid #a67c52;
   border-radius: 6px;
-  font-family: 'Garamond', 'Times New Roman', serif;
+  font-family: "Garamond", "Times New Roman", serif;
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.3s ease;
@@ -145,4 +149,14 @@ li {
 
 .class-details-toggle-button:hover {
   background-color: #e4c39b;
+}
+
+.detail-box {
+  background-color: #fcf5e5;
+  border: 2px solid #a67c52;
+  padding: 1.5rem;
+  border-radius: 10px;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
 }
