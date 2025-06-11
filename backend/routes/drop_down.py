@@ -113,23 +113,35 @@ def get_class_by_id(class_id):
                         }
                         for item in rel_data
                     ]
-                elif rel.key == 'classes_starting_equipment':
+                elif rel.key in ['classes_starting_equipment', 'classes_starting_equipment_options']:
                     cls_dict[rel.key] = [
                         {
                             "id": item.id,
                             "equipment_id": item.equipment_id,
-                            "equipment_quantity": item.quantity,
-                            "equipment_name": item.equipment.name if item.equipment else None
+                            "class_id": getattr(item, "class_id", None),
+                            "equipment_name": item.equipment.name if item.equipment else None,
+                            "equipment_description": item.equipment.description if item.equipment else None,
+                            "equipment_quantity": getattr(item, "quantity", None)
                         }
                         for item in rel_data
                     ]
-                elif rel.key == 'classes_starting_equipment_options':
+                elif rel.key in ['classes_proficiencies', 'classes_proficiency_choices']:
                     cls_dict[rel.key] = [
                         {
                             "id": item.id,
-                            "equipment_id": item.equipment_id,
-                            "class_id": item.class_id,
-                            "equipment_name": item.equipment.name if item.equipment else None
+                            "proficiency_id": item.proficiency_id,
+                            "proficiency_name": item.proficiency.name if item.proficiency else None,
+                            "proficiency_type": item.proficiency.type if item.proficiency else None
+                        }
+                        for item in rel_data
+                    ]
+                elif rel.key == 'classes_saving_throws':
+                    cls_dict[rel.key] = [
+                        {
+                            "id": item.id,
+                            "ability_score_id": item.ability_score_id,
+                            "ability_score_name": item.ability_score.name if item.ability_score else None,
+                            "ability_score_description": item.ability_score.description if item.ability_score else None
                         }
                         for item in rel_data
                     ]
