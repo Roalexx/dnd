@@ -3,6 +3,12 @@ import api from "../api/axios";
 import ClassDetailOptions from "../components/ClassDetailOptions";
 import RaceDetailOptions from "../components/RaceDetailOptions";
 import "../components/CharacterForm.css";
+import {
+  calculateHitPoints,
+  calculateArmorClass,
+  calculateSpeed,
+  getCharacterSizeId,
+} from "../utils/characterCalculations";
 
 const CLASS_DEFAULT_STATS = {
   Barbarian: [15, 14, 14, 8, 10, 8],
@@ -21,11 +27,6 @@ const CLASS_DEFAULT_STATS = {
 
 const SCORE_COST = [0, 1, 2, 3, 4, 5, 7, 9];
 
-const extractSizeFromDescription = (desc) => {
-  const match = desc.match(/Your size is (\w+)/i);
-  return match ? match[1] : null;
-};
-
 function CreateCharacter() {
   const [dropdowns, setDropdowns] = useState({
     races: [],
@@ -35,8 +36,29 @@ function CreateCharacter() {
     ability_scores: [],
   });
 
+  const updateScore = (index, delta) => {
+    const newScore = scores[index] + delta;
+    if (newScore < 8 || newScore > 15) return;
+
+    const tempScores = [...scores];
+    const newTotal = scores.reduce(
+      (sum, val, i) =>
+        i === index
+          ? sum + SCORE_COST[newScore - 8]
+          : sum + SCORE_COST[val - 8],
+      0
+    );
+
+    if (newTotal > 27) return;
+
+    tempScores[index] = newScore;
+    setScores(tempScores);
+  };
+
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedRace, setSelectedRace] = useState("");
+  const [selectedAlignmentId, setSelectedAlignmentId] = useState("");
+  const [characterName, setCharacterName] = useState("");
 
   const [classMap, setClassMap] = useState(null);
   const [selectedClassData, setSelectedClassData] = useState(null);
@@ -44,13 +66,31 @@ function CreateCharacter() {
   const [selectedAbilityBonusChoices, setSelectedAbilityBonusChoices] =
     useState([]);
   const [fixedAbilityBonuses, setFixedAbilityBonuses] = useState([]);
-
   const [classLevelData, setClassLevelData] = useState(null);
   const [scores, setScores] = useState([8, 8, 8, 8, 8, 8]);
   const [remainingPoints, setRemainingPoints] = useState(27);
-
   const [showClassOptions, setShowClassOptions] = useState(false);
   const [showRaceOptions, setShowRaceOptions] = useState(false);
+  const [currency, setCurrency] = useState({
+    gold: 75,
+    silver: 20,
+    copper: 75,
+  });
+  const [personalityTraits, setPersonalityTraits] = useState({
+    personality: "",
+    ideals: "",
+    bonds: "",
+    flaws: "",
+    notes: "",
+  });
+
+  const hitPoints = calculateHitPoints(
+    selectedClassData?.hit_die || 8,
+    scores[2]
+  );
+  const armorClass = calculateArmorClass(scores[1]);
+  const speed = calculateSpeed(selectedRaceData);
+  const characterSizeId = getCharacterSizeId(selectedRaceData);
 
   useEffect(() => {
     const fetchDropdowns = async () => {
@@ -144,39 +184,17 @@ function CreateCharacter() {
     fetchRaceDetails();
   }, [selectedRace, dropdowns.races]);
 
-  const updateScore = (index, delta) => {
-    const newScore = scores[index] + delta;
-    if (newScore < 8 || newScore > 15) return;
-    const tempScores = [...scores];
-    const newTotal = scores.reduce(
-      (sum, val, i) =>
-        i === index
-          ? sum + SCORE_COST[newScore - 8]
-          : sum + SCORE_COST[val - 8],
-      0
-    );
-    if (newTotal > 27) return;
-    tempScores[index] = newScore;
-    setScores(tempScores);
-  };
-
-  const labels = ["STR", "DEX", "CON", "INT", "WIS", "CHA"];
-  const racialBonusMap = {};
-
-  fixedAbilityBonuses.forEach(({ name, value }) => {
-    if (name) racialBonusMap[name] = (racialBonusMap[name] || 0) + value;
-  });
-
-  selectedAbilityBonusChoices.forEach((name) => {
-    if (name) racialBonusMap[name] = (racialBonusMap[name] || 0) + 1;
-  });
-
   return (
     <div className="character-form medieval-theme">
       <h2>Create Your Hero</h2>
 
       <label>Character Name:</label>
-      <input type="text" placeholder="Enter name..." />
+      <input
+        type="text"
+        placeholder="Enter name..."
+        value={characterName}
+        onChange={(e) => setCharacterName(e.target.value)}
+      />
 
       <label>Class:</label>
       <select onChange={(e) => setSelectedClass(e.target.value)}>
@@ -243,7 +261,7 @@ function CreateCharacter() {
       )}
 
       <label>Alignment:</label>
-      <select>
+      <select onChange={(e) => setSelectedAlignmentId(e.target.value)}>
         <option value="">Select</option>
         {dropdowns.alignments.map((a) => (
           <option key={a.id} value={a.id}>
@@ -267,21 +285,26 @@ function CreateCharacter() {
         </p>
       </div>
 
-      {scores.map((score, idx) => {
-        const label = labels[idx];
-        const bonus = racialBonusMap[label] || 0;
-        const total = score + bonus;
+      {["STR", "DEX", "CON", "INT", "WIS", "CHA"].map((label, idx) => {
+        const bonus =
+          (fixedAbilityBonuses.find((b) => b.name === label)?.value || 0) +
+          (selectedAbilityBonusChoices.filter((b) => b === label).length || 0);
+        const total = scores[idx] + bonus;
 
         return (
           <div key={label} className="score-row">
             <label>{label}:</label>
-            <button disabled={score <= 8} onClick={() => updateScore(idx, -1)}>
+            <button
+              disabled={scores[idx] <= 8}
+              onClick={() => updateScore(idx, -1)}
+            >
               -
             </button>
             <input value={total} readOnly />
             <button
               disabled={
-                score >= 15 || SCORE_COST[score + 1 - 8] > remainingPoints
+                scores[idx] >= 15 ||
+                SCORE_COST[scores[idx] + 1 - 8] > remainingPoints
               }
               onClick={() => updateScore(idx, 1)}
             >
@@ -301,6 +324,54 @@ function CreateCharacter() {
           </div>
         );
       })}
+
+      <h3 style={{ textAlign: "center", marginTop: "2rem" }}>CURRENCY</h3>
+      <div className="currency-section">
+        {["gold", "silver", "copper"].map((type) => (
+          <div key={type}>
+            <label>{type.charAt(0).toUpperCase() + type.slice(1)}:</label>
+            <input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={currency[type]}
+              onChange={(e) => {
+                const value = parseInt(e.target.value);
+                if (Number.isInteger(value) && value >= 0) {
+                  setCurrency((prev) => ({ ...prev, [type]: value }));
+                }
+              }}
+            />
+          </div>
+        ))}
+      </div>
+
+      <h3 style={{ textAlign: "center", marginTop: "2rem" }}>
+        PERSONALITY TRAITS
+      </h3>
+      <div className="personality-section">
+        {Object.keys(personalityTraits).map((key) => (
+          <div key={key}>
+            <label>{key.charAt(0).toUpperCase() + key.slice(1)}:</label>
+            <textarea
+              value={personalityTraits[key]}
+              onChange={(e) =>
+                setPersonalityTraits((prev) => ({
+                  ...prev,
+                  [key]: e.target.value,
+                }))
+              }
+            />
+          </div>
+        ))}
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: "2rem" }}>
+        <button type="button" className="submit-button">
+          Create Character
+        </button>
+      </div>
     </div>
   );
 }

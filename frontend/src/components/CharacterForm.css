@@ -178,3 +178,19 @@ li {
   margin-bottom: 2rem;
   box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
 }
+.submit-button {
+  background-color: #5c4033;
+  color: #fffaf0;
+  font-size: 1.2rem;
+  padding: 0.6rem 2rem;
+  border: 2px solid #a67c52;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: "Cinzel Decorative", serif;
+  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+  background-color: #7a5238;
+}
