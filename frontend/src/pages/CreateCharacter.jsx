@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
 import ClassDetailOptions from "../components/ClassDetailOptions";
+import RaceDetailOptions from "../components/RaceDetailOptions";
 import "../components/CharacterForm.css";
 
 const CLASS_DEFAULT_STATS = {
@@ -20,34 +21,46 @@ const CLASS_DEFAULT_STATS = {
 
 const SCORE_COST = [0, 1, 2, 3, 4, 5, 7, 9];
 
+const extractSizeFromDescription = (desc) => {
+  const match = desc.match(/Your size is (\w+)/i);
+  return match ? match[1] : null;
+};
+
 function CreateCharacter() {
   const [dropdowns, setDropdowns] = useState({
     races: [],
     classes: [],
     alignments: [],
-    sizes: [],
     proficiencies: [],
     ability_scores: [],
   });
 
   const [selectedClass, setSelectedClass] = useState("");
+  const [selectedRace, setSelectedRace] = useState("");
+
   const [classMap, setClassMap] = useState(null);
   const [selectedClassData, setSelectedClassData] = useState(null);
+  const [selectedRaceData, setSelectedRaceData] = useState(null);
+  const [selectedAbilityBonusChoices, setSelectedAbilityBonusChoices] =
+    useState([]);
+  const [fixedAbilityBonuses, setFixedAbilityBonuses] = useState([]);
+
   const [classLevelData, setClassLevelData] = useState(null);
   const [scores, setScores] = useState([8, 8, 8, 8, 8, 8]);
   const [remainingPoints, setRemainingPoints] = useState(27);
+
   const [showClassOptions, setShowClassOptions] = useState(false);
+  const [showRaceOptions, setShowRaceOptions] = useState(false);
 
   useEffect(() => {
     const fetchDropdowns = async () => {
       const token = localStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const [races, classes, alignments, sizes, proficiencies, abilityScores] =
+      const [races, classes, alignments, proficiencies, abilityScores] =
         await Promise.all([
           api.get("/races", config),
           api.get("/classes", config),
           api.get("/alignments", config),
-          api.get("/character-sizes", config),
           api.get("/proficiencies", config),
           api.get("/ability-scores", config),
         ]);
@@ -56,7 +69,6 @@ function CreateCharacter() {
         races: races.data,
         classes: classes.data,
         alignments: alignments.data,
-        sizes: sizes.data,
         proficiencies: proficiencies.data,
         ability_scores: abilityScores.data,
       });
@@ -105,12 +117,32 @@ function CreateCharacter() {
         setClassLevelData(levelRes.data);
         setSelectedClassData(classRes.data);
       } catch (error) {
-        console.error("Class verileri alınamadı:", error);
+        console.error("Failed to fetch class data:", error);
       }
     };
 
     fetchClassDetails();
   }, [selectedClass, classMap]);
+
+  useEffect(() => {
+    const fetchRaceDetails = async () => {
+      if (!selectedRace) return;
+      const token = localStorage.getItem("token");
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const raceObj = dropdowns.races.find((r) => r.name === selectedRace);
+      if (!raceObj?.id) return;
+
+      try {
+        const response = await api.get(`/races/${raceObj.id}`, config);
+        setSelectedRaceData(response.data);
+        setShowRaceOptions(true);
+      } catch (error) {
+        console.error("Failed to fetch race data:", error);
+      }
+    };
+
+    fetchRaceDetails();
+  }, [selectedRace, dropdowns.races]);
 
   const updateScore = (index, delta) => {
     const newScore = scores[index] + delta;
@@ -129,6 +161,15 @@ function CreateCharacter() {
   };
 
   const labels = ["STR", "DEX", "CON", "INT", "WIS", "CHA"];
+  const racialBonusMap = {};
+
+  fixedAbilityBonuses.forEach(({ name, value }) => {
+    if (name) racialBonusMap[name] = (racialBonusMap[name] || 0) + value;
+  });
+
+  selectedAbilityBonusChoices.forEach((name) => {
+    if (name) racialBonusMap[name] = (racialBonusMap[name] || 0) + 1;
+  });
 
   return (
     <div className="character-form medieval-theme">
@@ -172,14 +213,34 @@ function CreateCharacter() {
         )}
 
       <label>Race:</label>
-      <select>
+      <select onChange={(e) => setSelectedRace(e.target.value)}>
         <option value="">Select</option>
         {dropdowns.races.map((r) => (
-          <option key={r.id} value={r.id}>
+          <option key={r.id} value={r.name}>
             {r.name}
           </option>
         ))}
       </select>
+
+      {selectedRace && (
+        <button
+          type="button"
+          className="class-details-toggle-button"
+          onClick={() => setShowRaceOptions(!showRaceOptions)}
+        >
+          +
+        </button>
+      )}
+
+      {selectedRace && showRaceOptions && selectedRaceData && (
+        <div className="detail-box">
+          <RaceDetailOptions
+            selectedRace={selectedRaceData}
+            onAbilityBonusChooseChange={setSelectedAbilityBonusChoices}
+            onFixedAbilityBonusesChange={setFixedAbilityBonuses}
+          />
+        </div>
+      )}
 
       <label>Alignment:</label>
       <select>
@@ -187,16 +248,6 @@ function CreateCharacter() {
         {dropdowns.alignments.map((a) => (
           <option key={a.id} value={a.id}>
             {a.name}
-          </option>
-        ))}
-      </select>
-
-      <label>Size:</label>
-      <select>
-        <option value="">Select</option>
-        {dropdowns.sizes.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.name}
           </option>
         ))}
       </select>
@@ -216,23 +267,40 @@ function CreateCharacter() {
         </p>
       </div>
 
-      {scores.map((score, idx) => (
-        <div key={labels[idx]} className="score-row">
-          <label>{labels[idx]}:</label>
-          <button disabled={score <= 8} onClick={() => updateScore(idx, -1)}>
-            -
-          </button>
-          <input value={score} readOnly />
-          <button
-            disabled={
-              score >= 15 || SCORE_COST[score + 1 - 8] > remainingPoints
-            }
-            onClick={() => updateScore(idx, 1)}
-          >
-            +
-          </button>
-        </div>
-      ))}
+      {scores.map((score, idx) => {
+        const label = labels[idx];
+        const bonus = racialBonusMap[label] || 0;
+        const total = score + bonus;
+
+        return (
+          <div key={label} className="score-row">
+            <label>{label}:</label>
+            <button disabled={score <= 8} onClick={() => updateScore(idx, -1)}>
+              -
+            </button>
+            <input value={total} readOnly />
+            <button
+              disabled={
+                score >= 15 || SCORE_COST[score + 1 - 8] > remainingPoints
+              }
+              onClick={() => updateScore(idx, 1)}
+            >
+              +
+            </button>
+            {bonus > 0 && (
+              <span
+                style={{
+                  marginLeft: "0.5rem",
+                  color: "#a0522d",
+                  fontSize: "0.9rem",
+                }}
+              >
+                (+{bonus} from race)
+              </span>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

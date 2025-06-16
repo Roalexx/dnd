@@ -42,6 +42,115 @@ def get_races():
     finally:
         session.close()
 
+@races_bp.route("/api/races/<int:race_id>", methods=["GET"])
+@swag_from({
+    'tags': ['Dropdown'],
+    'summary': 'Get a single race with relationships',
+    'description': 'Returns a specific race and all its fields and related options like ability bonuses, traits, languages, proficiencies, and subraces.',
+    'parameters': [
+        {
+            'name': 'race_id',
+            'in': 'path',
+            'required': True,
+            'schema': {'type': 'integer'},
+            'description': 'ID of the race to retrieve'
+        }
+    ],
+    'responses': {
+        200: {'description': 'Race data returned successfully'},
+        404: {'description': 'Race not found'}
+    }
+})
+def get_race_by_id(race_id):
+    session = SessionLocal()
+    try:
+        race = session.query(Races).options(*[
+            selectinload(getattr(Races, rel.key)) for rel in Races.__mapper__.relationships
+        ]).filter(Races.id == race_id).first()
+
+        if not race:
+            return jsonify({"error": "Race not found"}), 404
+
+        race_dict = {col.name: getattr(race, col.name) for col in Races.__table__.columns}
+
+        for rel in Races.__mapper__.relationships:
+            rel_data = getattr(race, rel.key)
+
+            if isinstance(rel_data, list):
+                if rel.key == "race_ability_bonus_options":
+                    race_dict[rel.key] = [
+                        {
+                            "id": item.id,
+                            "ability_score_id": item.ability_score_id,
+                            "ability_score_name": item.ability_score.name if item.ability_score else None
+                        }
+                        for item in rel_data
+                    ]
+                elif rel.key == "race_languages":
+                    race_dict[rel.key] = [
+                        {
+                            "id": item.id,
+                            "language_id": item.language_id,
+                            "language_name": item.language.name if item.language else None
+                        }
+                        for item in rel_data
+                    ]
+                elif rel.key == "race_language_options":
+                    race_dict[rel.key] = [
+                        {
+                            "id": item.id,
+                            "language_id": item.language_id,
+                            "language_name": item.language.name if item.language else None
+                        }
+                        for item in rel_data
+                    ]
+                elif rel.key == "race_proficiency_options":
+                    race_dict[rel.key] = [
+                        {
+                            "id": item.id,
+                            "proficiency_id": item.proficiency_id,
+                            "proficiency_name": item.proficiency.name if item.proficiency else None,
+                            "proficiency_type": item.proficiency.type if item.proficiency else None
+                        }
+                        for item in rel_data
+                    ]
+                elif rel.key == "race_traits":
+                    race_dict[rel.key] = [
+                        {
+                            "id": item.id,
+                            "trait_id": item.trait_id,
+                            "trait_name": item.trait.name if item.trait else None,
+                            "trait_description": item.trait.description if item.trait else None
+                        }
+                        for item in rel_data
+                    ]
+                elif rel.key == "race_proficiencies":
+                    race_dict[rel.key] = [
+                        {
+                            "id": item.id,
+                            "proficiency_id": item.proficiency_id,
+                            "proficiency_name": item.proficiency.name if item.proficiency else None,
+                            "proficiency_type": item.proficiency.type if item.proficiency else None
+                        }
+                        for item in rel_data
+                    ]
+                else:
+                    race_dict[rel.key] = [
+                        {col.name: getattr(item, col.name) for col in item.__table__.columns}
+                        for item in rel_data
+                    ]
+
+            elif rel_data:
+                race_dict[rel.key] = {
+                    col.name: getattr(rel_data, col.name) for col in rel_data.__table__.columns
+                }
+
+        return jsonify(race_dict), 200
+
+    finally:
+        session.close()
+
+
 
 # --------- CLASSES ---------
 @classes_bp.route("/api/classes", methods=["GET"])
