@@ -1,96 +1,43 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, validate
 
-# -------- Temel Alt Şemalar --------
-
-class AbilityScoreSchema(Schema):
-    strength = fields.Integer(required=True)
-    dexterity = fields.Integer(required=True)
-    constitution = fields.Integer(required=True)
-    intelligence = fields.Integer(required=True)
-    wisdom = fields.Integer(required=True)
-    charisma = fields.Integer(required=True)
-
-class CurrencySchema(Schema):
-    gold = fields.Integer(load_default=0)
-    silver = fields.Integer(load_default=0)
-    copper = fields.Integer(load_default=0)
-
-class TextBlockSchema(Schema):
-    personality = fields.String(allow_none=True)
-    ideals = fields.String(allow_none=True)
-    bonds = fields.String(allow_none=True)
-    flaws = fields.String(allow_none=True)
-    notes = fields.String(allow_none=True)
-
-# -------- Alt İlişkiler --------
-
-class CharacterSpellSchema(Schema):
-    id = fields.Integer(required=True)
-    name = fields.String(required=True)
-    level = fields.Integer(allow_none=True)
-
-class CharacterEquipmentSchema(Schema):
-    id = fields.Integer(required=True)
-    name = fields.String(required=True)
-    quantity = fields.Integer(allow_none=True)
-    category = fields.String(allow_none=True)
-
-class CharacterLanguageSchema(Schema):
-    id = fields.Integer(required=True)
-    name = fields.String(required=True)
-
-class CharacterSkillSchema(Schema):
-    id = fields.Integer(required=True)
-    name = fields.String(required=True)
-    ability_score = fields.String(allow_none=True)
-
-class CharacterTraitSchema(Schema):
-    id = fields.Integer(required=True)
-    name = fields.String(required=True)
-    description = fields.String(allow_none=True)
-
-class CharacterSavingThrowSchema(Schema):
-    id = fields.Integer(required=True)
-    ability_score = fields.String(required=True)
-    value = fields.Integer(required=True)
-
-class CharacterConditionSchema(Schema):
-    id = fields.Integer(required=True)
-    name = fields.String(required=True)
-    description = fields.String(allow_none=True)
-
-# -------- Ana Karakter Şeması --------
+class AbilityScoresSchema(Schema):
+    strength = fields.Int(required=True, validate=validate.Range(min=1))
+    dexterity = fields.Int(required=True, validate=validate.Range(min=1))
+    constitution = fields.Int(required=True, validate=validate.Range(min=1))
+    intelligence = fields.Int(required=True, validate=validate.Range(min=1))
+    wisdom = fields.Int(required=True, validate=validate.Range(min=1))
+    charisma = fields.Int(required=True, validate=validate.Range(min=1))
 
 class CharacterSchema(Schema):
-    id = fields.Integer(dump_only=True)
-    name = fields.String(required=True)
+    id = fields.Int(dump_only=True)
+    name = fields.Str(required=True, validate=validate.Length(min=1, max=100))
 
-    class_id = fields.Integer(required=True)
-    subclass_id = fields.Integer(allow_none=True)
-    race_id = fields.Integer(required=True)
-    feat_id = fields.Integer(allow_none=True)
-    alignment_id = fields.Integer(required=True) 
+    class_id = fields.Int(required=True)
+    subclass_id = fields.Int(allow_none=True)
+    race_id = fields.Int(required=True)
+    alignment_id = fields.Int(required=True)
+    character_size_id = fields.Int(required=True)
 
-    level = fields.Integer(load_default=1)
-    experience = fields.Integer(load_default=0)
+    feat_id = fields.Int(allow_none=True)
 
-    ability_scores = fields.Nested(AbilityScoreSchema, required=True)
-    hit_points = fields.Integer(required=True)
-    armor_class = fields.Integer(required=True)
-    character_size_id = fields.Integer(required=True)
-    speed = fields.Integer(required=True)
+    level = fields.Int(load_default=1, validate=validate.Range(min=1))
+    experience = fields.Int(load_default=0, validate=validate.Range(min=0))
 
-    currency = fields.Nested(CurrencySchema, load_default={})
-    background = fields.String(allow_none=True)
-    text_blocks = fields.Nested(TextBlockSchema, allow_none=True)
+    ability_scores = fields.Nested(AbilityScoresSchema)
 
-    image_url = fields.String(allow_none=True)
+    hit_points = fields.Int(required=True)
+    armor_class = fields.Int(required=True)
+    speed = fields.Int(required=True)
+
+    gold = fields.Int(load_default=0)
+    silver = fields.Int(load_default=0)
+    copper = fields.Int(load_default=0)
+
+    text_blocks = fields.Dict()           # personality / ideals / bonds / flaws
+    notes = fields.Str(allow_none=True)
+    image_url = fields.Url(allow_none=True)
+
+    dungeon_master_id = fields.Int(allow_none=True)
+
+    is_admin = fields.Bool(dump_only=True)
     created_at = fields.DateTime(dump_only=True)
-
-    spells = fields.List(fields.Nested(CharacterSpellSchema), dump_only=True)
-    equipment = fields.List(fields.Nested(CharacterEquipmentSchema), dump_only=True)
-    languages = fields.List(fields.Nested(CharacterLanguageSchema), dump_only=True)
-    skills = fields.List(fields.Nested(CharacterSkillSchema), dump_only=True)
-    traits = fields.List(fields.Nested(CharacterTraitSchema), dump_only=True)
-    saving_throws = fields.List(fields.Nested(CharacterSavingThrowSchema), dump_only=True)
-    conditions = fields.List(fields.Nested(CharacterConditionSchema), dump_only=True)

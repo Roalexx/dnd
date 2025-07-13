@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import ClassDetailOptions from "../components/ClassDetailOptions";
 import RaceDetailOptions from "../components/RaceDetailOptions";
@@ -10,6 +11,7 @@ import {
   getCharacterSizeId,
 } from "../utils/characterCalculations";
 
+/* ---------- sabitler ---------- */
 const CLASS_DEFAULT_STATS = {
   Barbarian: [15, 14, 14, 8, 10, 8],
   Bard: [8, 14, 14, 10, 10, 15],
@@ -24,10 +26,13 @@ const CLASS_DEFAULT_STATS = {
   Warlock: [8, 14, 14, 10, 10, 15],
   Wizard: [8, 14, 14, 15, 10, 8],
 };
-
 const SCORE_COST = [0, 1, 2, 3, 4, 5, 7, 9];
+const DEFAULT_SIZE_ID = 3; // Medium
 
 function CreateCharacter() {
+  const navigate = useNavigate();
+
+  /* ---------- state ---------- */
   const [dropdowns, setDropdowns] = useState({
     races: [],
     classes: [],
@@ -35,25 +40,6 @@ function CreateCharacter() {
     proficiencies: [],
     ability_scores: [],
   });
-
-  const updateScore = (index, delta) => {
-    const newScore = scores[index] + delta;
-    if (newScore < 8 || newScore > 15) return;
-
-    const tempScores = [...scores];
-    const newTotal = scores.reduce(
-      (sum, val, i) =>
-        i === index
-          ? sum + SCORE_COST[newScore - 8]
-          : sum + SCORE_COST[val - 8],
-      0
-    );
-
-    if (newTotal > 27) return;
-
-    tempScores[index] = newScore;
-    setScores(tempScores);
-  };
 
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedRace, setSelectedRace] = useState("");
@@ -67,10 +53,13 @@ function CreateCharacter() {
     useState([]);
   const [fixedAbilityBonuses, setFixedAbilityBonuses] = useState([]);
   const [classLevelData, setClassLevelData] = useState(null);
+
   const [scores, setScores] = useState([8, 8, 8, 8, 8, 8]);
   const [remainingPoints, setRemainingPoints] = useState(27);
+
   const [showClassOptions, setShowClassOptions] = useState(false);
   const [showRaceOptions, setShowRaceOptions] = useState(false);
+
   const [currency, setCurrency] = useState({
     gold: 75,
     silver: 20,
@@ -84,43 +73,62 @@ function CreateCharacter() {
     notes: "",
   });
 
+  const [loading, setLoading] = useState(false);
+
+  /* ---------- hesaplamalar ---------- */
   const hitPoints = calculateHitPoints(
     selectedClassData?.hit_die || 8,
     scores[2]
   );
   const armorClass = calculateArmorClass(scores[1]);
   const speed = calculateSpeed(selectedRaceData);
-  const characterSizeId = getCharacterSizeId(selectedRaceData);
+  const characterSizeId =
+    getCharacterSizeId(selectedRaceData) || DEFAULT_SIZE_ID;
 
+  /* ---------- puan güncelle ---------- */
+  const updateScore = (index, delta) => {
+    const next = scores[index] + delta;
+    if (next < 8 || next > 15) return;
+
+    const costDiff = SCORE_COST[next - 8] - SCORE_COST[scores[index] - 8];
+    if (remainingPoints - costDiff < 0) return;
+
+    const newScores = [...scores];
+    newScores[index] = next;
+    setScores(newScores);
+  };
+
+  /* ---------- dropdown verileri (1 kere) ---------- */
   useEffect(() => {
-    const fetchDropdowns = async () => {
-      const token = localStorage.getItem("token");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const [races, classes, alignments, proficiencies, abilityScores] =
-        await Promise.all([
-          api.get("/races", config),
-          api.get("/classes", config),
-          api.get("/alignments", config),
-          api.get("/proficiencies", config),
-          api.get("/ability-scores", config),
-        ]);
+    (async () => {
+      try {
+        const [races, classes, alignments, profs, abilityScores] =
+          await Promise.all([
+            api.get("/races"),
+            api.get("/classes"),
+            api.get("/alignments"),
+            api.get("/proficiencies"),
+            api.get("/ability-scores"),
+          ]);
 
-      setDropdowns({
-        races: races.data,
-        classes: classes.data,
-        alignments: alignments.data,
-        proficiencies: proficiencies.data,
-        ability_scores: abilityScores.data,
-      });
+        setDropdowns({
+          races: races.data,
+          classes: classes.data,
+          alignments: alignments.data,
+          proficiencies: profs.data,
+          ability_scores: abilityScores.data,
+        });
 
-      const classMapTemp = {};
-      classes.data.forEach((c) => (classMapTemp[c.name.toLowerCase()] = c));
-      setClassMap(classMapTemp);
-    };
-
-    fetchDropdowns();
+        const map = {};
+        classes.data.forEach((c) => (map[c.name.toLowerCase()] = c));
+        setClassMap(map);
+      } catch (err) {
+        console.error("Dropdown verisi alınamadı:", err);
+      }
+    })();
   }, []);
 
+  /* ---------- sınıf seçimi ---------- */
   useEffect(() => {
     if (selectedClass && CLASS_DEFAULT_STATS[selectedClass]) {
       setScores(CLASS_DEFAULT_STATS[selectedClass]);
@@ -130,72 +138,103 @@ function CreateCharacter() {
     }
   }, [selectedClass]);
 
+  /* ---------- remaining point ---------- */
   useEffect(() => {
-    const total = scores.reduce(
-      (acc, val) => acc + (val > 15 ? 999 : SCORE_COST[val - 8]),
-      0
-    );
+    const total = scores.reduce((acc, v) => acc + SCORE_COST[v - 8], 0);
     setRemainingPoints(27 - total);
   }, [scores]);
 
+  /* ---------- class detayını çek ---------- */
   useEffect(() => {
-    const fetchClassDetails = async () => {
-      if (!selectedClass || !classMap) return;
-      const token = localStorage.getItem("token");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const normalizedClass = Object.keys(classMap).find(
-        (key) => key.toLowerCase() === selectedClass.toLowerCase()
-      );
-      const classId = classMap[normalizedClass]?.id;
-      if (!classId) return;
+    if (!selectedClass || !classMap) return;
 
+    const fetchClassDetails = async () => {
+      const classId = classMap[selectedClass.toLowerCase()]?.id;
+      if (!classId) return;
       try {
         const [levelRes, classRes] = await Promise.all([
-          api.get(`/class-levels/${classId}/1`, config),
-          api.get(`/classes/${classId}`, config),
+          api.get(`/class-levels/${classId}/1`),
+          api.get(`/classes/${classId}`),
         ]);
         setClassLevelData(levelRes.data);
         setSelectedClassData(classRes.data);
-      } catch (error) {
-        console.error("Failed to fetch class data:", error);
+      } catch (err) {
+        console.error("Class detay alınamadı:", err);
       }
     };
-
     fetchClassDetails();
   }, [selectedClass, classMap]);
 
+  /* ---------- race detayını çek ---------- */
   useEffect(() => {
-    const fetchRaceDetails = async () => {
-      if (!selectedRace) return;
-      const token = localStorage.getItem("token");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const raceObj = dropdowns.races.find((r) => r.name === selectedRace);
-      if (!raceObj?.id) return;
+    if (!selectedRace) return;
+    const raceObj = dropdowns.races.find((r) => r.name === selectedRace);
+    if (!raceObj) return;
 
+    (async () => {
       try {
-        const response = await api.get(`/races/${raceObj.id}`, config);
-        setSelectedRaceData(response.data);
+        const res = await api.get(`/races/${raceObj.id}`);
+        setSelectedRaceData(res.data);
         setShowRaceOptions(true);
-      } catch (error) {
-        console.error("Failed to fetch race data:", error);
+      } catch (err) {
+        console.error("Race detay alınamadı:", err);
       }
-    };
-
-    fetchRaceDetails();
+    })();
   }, [selectedRace, dropdowns.races]);
 
+  /* ---------- oluştur ---------- */
+  const handleCreate = async () => {
+    setLoading(true);
+    const payload = {
+      name: characterName,
+      class_id: selectedClassData?.id,
+      race_id: selectedRaceData?.id,
+      alignment_id: Number(selectedAlignmentId) || null,
+      character_size_id: Number(characterSizeId) || 3,
+      ability_scores: {
+        strength: scores[0],
+        dexterity: scores[1],
+        constitution: scores[2],
+        intelligence: scores[3],
+        wisdom: scores[4],
+        charisma: scores[5],
+      },
+      hit_points: hitPoints,
+      armor_class: armorClass,
+      speed,
+      gold: currency.gold,
+      silver: currency.silver,
+      copper: currency.copper,
+      text_blocks: personalityTraits,
+      feat_id: null,
+      dungeon_master_id: null,
+    };
+
+    try {
+      const res = await api.post("/characters", payload);
+      navigate(`/characters/${res.data.character_id}`);
+    } catch (err) {
+      console.error(err.response?.data || err);
+      alert(err.response?.data?.error || "Character creation failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ---------- render ---------- */
   return (
     <div className="character-form medieval-theme">
       <h2>Create Your Hero</h2>
 
+      {/* NAME */}
       <label>Character Name:</label>
       <input
         type="text"
-        placeholder="Enter name..."
         value={characterName}
         onChange={(e) => setCharacterName(e.target.value)}
       />
 
+      {/* CLASS */}
       <label>Class:</label>
       <select onChange={(e) => setSelectedClass(e.target.value)}>
         <option value="">Select</option>
@@ -230,6 +269,7 @@ function CreateCharacter() {
           </div>
         )}
 
+      {/* RACE */}
       <label>Race:</label>
       <select onChange={(e) => setSelectedRace(e.target.value)}>
         <option value="">Select</option>
@@ -260,6 +300,7 @@ function CreateCharacter() {
         </div>
       )}
 
+      {/* ALIGNMENT */}
       <label>Alignment:</label>
       <select onChange={(e) => setSelectedAlignmentId(e.target.value)}>
         <option value="">Select</option>
@@ -270,27 +311,16 @@ function CreateCharacter() {
         ))}
       </select>
 
+      {/* ABILITY SCORES */}
       <h3>Ability Scores</h3>
       <div className="remaining-points-container">
-        <p>
-          Remaining Points: <strong>{remainingPoints}</strong>
-          <span className="tooltip-trigger">
-            ❓
-            <span className="tooltip-text">
-              Each ability starts at 8. You have 27 points to spend. <br />
-              Score costs: <br />9 → 1pt, 10 → 2pt, 11 → 3pt, 12 → 4pt, 13 →
-              5pt, 14 → 7pt, 15 → 9pt.
-            </span>
-          </span>
-        </p>
+        Remaining Points: <strong>{remainingPoints}</strong>
       </div>
-
       {["STR", "DEX", "CON", "INT", "WIS", "CHA"].map((label, idx) => {
         const bonus =
           (fixedAbilityBonuses.find((b) => b.name === label)?.value || 0) +
-          (selectedAbilityBonusChoices.filter((b) => b === label).length || 0);
+          selectedAbilityBonusChoices.filter((b) => b === label).length;
         const total = scores[idx] + bonus;
-
         return (
           <div key={label} className="score-row">
             <label>{label}:</label>
@@ -310,21 +340,12 @@ function CreateCharacter() {
             >
               +
             </button>
-            {bonus > 0 && (
-              <span
-                style={{
-                  marginLeft: "0.5rem",
-                  color: "#a0522d",
-                  fontSize: "0.9rem",
-                }}
-              >
-                (+{bonus} from race)
-              </span>
-            )}
+            {bonus > 0 && <span className="racial-bonus">+{bonus}</span>}
           </div>
         );
       })}
 
+      {/* CURRENCY */}
       <h3 style={{ textAlign: "center", marginTop: "2rem" }}>CURRENCY</h3>
       <div className="currency-section">
         {["gold", "silver", "copper"].map((type) => (
@@ -333,20 +354,18 @@ function CreateCharacter() {
             <input
               type="number"
               min={0}
-              inputMode="numeric"
-              pattern="[0-9]*"
               value={currency[type]}
               onChange={(e) => {
-                const value = parseInt(e.target.value);
-                if (Number.isInteger(value) && value >= 0) {
-                  setCurrency((prev) => ({ ...prev, [type]: value }));
-                }
+                const v = parseInt(e.target.value);
+                if (Number.isInteger(v) && v >= 0)
+                  setCurrency((prev) => ({ ...prev, [type]: v }));
               }}
             />
           </div>
         ))}
       </div>
 
+      {/* PERSONALITY */}
       <h3 style={{ textAlign: "center", marginTop: "2rem" }}>
         PERSONALITY TRAITS
       </h3>
@@ -367,9 +386,20 @@ function CreateCharacter() {
         ))}
       </div>
 
+      {/* SUBMIT */}
       <div style={{ textAlign: "center", marginTop: "2rem" }}>
-        <button type="button" className="submit-button">
-          Create Character
+        <button
+          className="submit-button"
+          onClick={handleCreate}
+          disabled={
+            loading ||
+            !characterName ||
+            !selectedClassData ||
+            !selectedRaceData ||
+            !selectedAlignmentId
+          }
+        >
+          {loading ? "Creating..." : "Create Character"}
         </button>
       </div>
     </div>
