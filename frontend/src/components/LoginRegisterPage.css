@@ -1,0 +1,73 @@
+.auth-container {
+  max-width: 450px;
+  margin: 3rem auto;
+  padding: 2rem;
+  background: #fdf6e3; /* parchment */
+  border: 2px solid #5c4033;
+  border-radius: 10px;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
+  font-family: "Garamond", "Times New Roman", serif;
+  text-align: center;
+}
+
+.auth-container h2 {
+  font-family: "Cinzel Decorative", serif;
+  color: #3b2f2f;
+  margin-bottom: 1.5rem;
+}
+
+/* Form ve giriş alanları */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.auth-input {
+  padding: 0.6rem;
+  border: 1px solid #a1887f;
+  border-radius: 5px;
+  background: #fffaf0;
+  font-size: 1rem;
+  color: #333;
+}
+
+/* Butonlar */
+.auth-button {
+  padding: 0.6rem 1.2rem;
+  border: 2px solid #a67c52;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: "Cinzel Decorative", serif;
+  transition: background-color 0.3s ease;
+}
+
+/* submit-button stilini CharacterForm.css’ten MİRAS aldı */
+/* toggle-button  için ufak fark */
+.toggle-button {
+  background: transparent;
+  color: #5c4033;
+  border: none;
+  font-size: 0.95rem;
+  text-decoration: underline;
+}
+
+.toggle-button:hover {
+  color: #7a5238;
+}
+
+/* Hata / Başarı mesajları */
+.error-msg {
+  color: #c62828;
+  margin-top: 0.8rem;
+}
+
+.success-msg {
+  color: #2e7d32;
+  margin-top: 0.8rem;
+}
+
+.toggle-text {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}

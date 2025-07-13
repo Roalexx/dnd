@@ -1,22 +1,23 @@
-import React, { useState } from 'react';
-import api from '../api/axios';
+import React, { useState } from "react";
+import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
+import "../components/LoginRegisterPage.css";
 
 function LoginRegisterPage() {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const navigate = useNavigate();
 
   const resetForm = () => {
-    setEmail('');
-    setPassword('');
-    setUsername('');
-    setErrorMsg('');
-    setSuccessMsg('');
+    setEmail("");
+    setPassword("");
+    setUsername("");
+    setErrorMsg("");
+    setSuccessMsg("");
   };
 
   const validateForm = () => {
@@ -42,69 +43,76 @@ function LoginRegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMsg('');
-    setSuccessMsg('');
+    setErrorMsg("");
+    setSuccessMsg("");
 
     if (!validateForm()) return;
 
     try {
       if (isLogin) {
-        const response = await api.post('/login', { email, password });
+        const response = await api.post("/login", { email, password });
         const token = response.data.access_token;
-        localStorage.setItem('token', token);
-        navigate('/Dashboard')
+        localStorage.setItem("token", token);
+        navigate("/Dashboard");
       } else {
-        await api.post('/register', { email, password, username });
-        setSuccessMsg('Kayıt başarılı! Şimdi giriş yapabilirsin.');
+        await api.post("/register", { email, password, username });
+        setSuccessMsg("Kayıt başarılı! Şimdi giriş yapabilirsin.");
         setIsLogin(true);
         resetForm();
       }
     } catch (error) {
       console.error(error);
-      setErrorMsg(error.response?.data?.error || 'Bir hata oluştu');
+      setErrorMsg(error.response?.data?.error || "Bir hata oluştu");
     }
   };
 
   return (
-    <div>
-      <h2>{isLogin ? 'Giriş Yap' : 'Kayıt Ol'}</h2>
-      <form onSubmit={handleSubmit}>
+    <div className="auth-container">
+      <h2>{isLogin ? "Giriş Yap" : "Kayıt Ol"}</h2>
+      <form className="auth-form" onSubmit={handleSubmit}>
         {!isLogin && (
-          <div>
-            <input
-              type="text"
-              placeholder="Kullanıcı Adı"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required={!isLogin}
-            /><br/>
-          </div>
+          <input
+            type="text"
+            placeholder="Kullanıcı Adı"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="auth-input"
+            required
+          />
         )}
         <input
           type="email"
           placeholder="E-posta"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          className="auth-input"
           required
-        /><br/>
+        />
         <input
           type="password"
           placeholder="Şifre"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className="auth-input"
           required
-        /><br/>
-        <button type="submit">{isLogin ? 'Giriş' : 'Kayıt Ol'}</button>
+        />
+        <button type="submit" className="auth-button submit-button">
+          {isLogin ? "Giriş" : "Kayıt Ol"}
+        </button>
       </form>
 
-      {errorMsg && <p style={{ color: 'red' }}>{errorMsg}</p>}
-      {successMsg && <p style={{ color: 'green' }}>{successMsg}</p>}
+      {errorMsg && <p className="error-msg">{errorMsg}</p>}
+      {successMsg && <p className="success-msg">{successMsg}</p>}
 
-      <p>
-        {isLogin
-          ? "Hesabın yok mu? "
-          : "Zaten hesabın var mı? "}
-        <button onClick={() => { setIsLogin(!isLogin); resetForm(); }}>
+      <p className="toggle-text">
+        {isLogin ? "Hesabın yok mu? " : "Zaten hesabın var mı? "}
+        <button
+          onClick={() => {
+            setIsLogin(!isLogin);
+            resetForm();
+          }}
+          className="auth-button toggle-button"
+        >
           {isLogin ? "Kayıt Ol" : "Giriş Yap"}
         </button>
       </p>
