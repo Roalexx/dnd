@@ -41,12 +41,12 @@ function DiceRoller() {
   <div style={{
     textAlign: 'center',
     marginTop: '2rem',
-    background: 'radial-gradient(circle at 50% 30%, #e2c08d 0%, #a67c52 100%)',
+    background: 'radial-gradient(circle at 50% 30%, #23272a 0%, #18191c 100%)',
     fontFamily: 'MedievalSharp, serif',
-    color: '#3e2c0b',
-    border: '8px solid #7c5c2b',
+    color: '#e0e0e0',
+    border: '8px solid #23272a',
     borderRadius: '18px',
-    boxShadow: '0 0 40px #7c5c2b88',
+    boxShadow: '0 0 40px #18191c88',
     maxWidth: '480px',
     marginLeft: 'auto',
     marginRight: 'auto',
@@ -58,9 +58,9 @@ function DiceRoller() {
       fontFamily: 'MedievalSharp, serif',
       fontSize: '2.2rem',
       letterSpacing: '2px',
-      textShadow: '2px 2px 8px #a67c52',
+      textShadow: '2px 2px 8px #23272a',
       marginBottom: '1.5rem',
-      color: '#3e2c0b',
+      color: '#e0e0e0',
     }}>DND Dice Roller</h2>
     <div style={{ display: 'flex', justifyContent: 'center', gap: '0.7rem', flexWrap: 'wrap', marginBottom: '1.2rem' }}>
       {DICE_TYPES.map(dice => (
@@ -71,12 +71,12 @@ function DiceRoller() {
             fontFamily: 'MedievalSharp, serif',
             fontSize: '1.1rem',
             padding: '0.4rem 1.1rem',
-            background: 'linear-gradient(90deg, #a67c52 0%, #e2c08d 100%)',
-            color: '#3e2c0b',
-            border: '2px solid #7c5c2b',
+            background: 'linear-gradient(90deg, #23272a 0%, #444950 100%)',
+            color: '#e0e0e0',
+            border: '2px solid #444950',
             borderRadius: '10px',
             fontWeight: 'bold',
-            boxShadow: '0 0 8px #7c5c2b88',
+            boxShadow: '0 0 8px #18191c88',
             cursor: 'pointer',
             marginBottom: '0.2rem',
             marginTop: '0.2rem',
@@ -89,14 +89,14 @@ function DiceRoller() {
       ))}
     </div>
     <div style={{ marginBottom: '1.2rem' }}>
-      {diceList.length === 0 && <div style={{ fontSize: '1.1rem', color: '#7c5c2b' }}>Zar eklemek için yukarıdan bir zar tipi seçin.</div>}
+      {diceList.length === 0 && <div style={{ fontSize: '1.1rem', color: '#444950' }}>Zar eklemek için yukarıdan bir zar tipi seçin.</div>}
       {diceList.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.7rem' }}>
           {diceList.map((dice, idx) => (
             <div key={dice.id} style={{ position: 'relative', display: 'inline-block', marginBottom: '0.5rem' }}>
-              <svg width="90" height="90" viewBox="0 0 120 120" style={{ transition: 'transform 0.8s', transform: rolling ? 'rotate(720deg)' : 'none', filter: 'drop-shadow(0 0 12px #7c5c2b)' }}>
-                <polygon points="60,10 110,35 110,85 60,110 10,85 10,35" fill="#f7e7c1" stroke="#7c5c2b" strokeWidth="5" />
-                <text x="60" y="45" textAnchor="middle" fontSize="22" fill="#3e2c0b" fontFamily="MedievalSharp, serif" style={{textShadow:'2px 2px 8px #a67c52'}}>
+              <svg width="90" height="90" viewBox="0 0 120 120" style={{ transition: 'transform 0.8s', transform: rolling ? 'rotate(720deg)' : 'none', filter: 'drop-shadow(0 0 12px #23272a)' }}>
+                <polygon points="60,10 110,35 110,85 60,110 10,85 10,35" fill="#23272a" stroke="#444950" strokeWidth="5" />
+                <text x="60" y="45" textAnchor="middle" fontSize="22" fill="#e0e0e0" fontFamily="MedievalSharp, serif" style={{textShadow:'2px 2px 8px #444950'}}>
                   D{dice.sides}
                 </text>
                 <text
@@ -106,13 +106,13 @@ function DiceRoller() {
                   fontSize="32"
                   fill={(() => {
                     const val = results.find(r => r.id === dice.id)?.value;
-                    if (val === dice.sides) return '#e2c08d'; // max
+                    if (val === dice.sides) return '#b8b8b8'; // max
                     if (val === 1) return '#c0392b'; // min
-                    return '#7c5c2b';
+                    return '#444950';
                   })()}
                   fontFamily="MedievalSharp, serif"
                   style={{
-                    textShadow: '2px 2px 8px #e2c08d',
+                    textShadow: '2px 2px 8px #23272a',
                     animation: (() => {
                       const val = results.find(r => r.id === dice.id)?.value;
                       if (val === dice.sides) return 'flashmax 1.2s linear infinite';
@@ -130,7 +130,7 @@ function DiceRoller() {
                   position: 'absolute',
                   top: '-8px',
                   right: '-8px',
-                  background: '#a67c52',
+                  background: '#444950',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '50%',
@@ -139,7 +139,7 @@ function DiceRoller() {
                   fontWeight: 'bold',
                   fontSize: '1rem',
                   cursor: 'pointer',
-                  boxShadow: '0 0 4px #7c5c2b88',
+                  boxShadow: '0 0 4px #23272a88',
                 }}
                 disabled={rolling}
               >
@@ -156,13 +156,13 @@ function DiceRoller() {
         marginTop: '0.7rem',
         fontSize: '1.3rem',
         padding: '0.7rem 2.2rem',
-        background: 'linear-gradient(90deg, #a67c52 0%, #e2c08d 100%)',
-        color: '#3e2c0b',
-        border: '3px solid #7c5c2b',
+        background: 'linear-gradient(90deg, #23272a 0%, #444950 100%)',
+        color: '#e0e0e0',
+        border: '3px solid #444950',
         borderRadius: '12px',
         fontFamily: 'MedievalSharp, serif',
         fontWeight: 'bold',
-        boxShadow: '0 0 12px #7c5c2b88',
+        boxShadow: '0 0 12px #18191c88',
         cursor: rolling || diceList.length === 0 ? 'not-allowed' : 'pointer',
         transition: 'all 0.2s',
         opacity: rolling || diceList.length === 0 ? 0.7 : 1,
@@ -172,13 +172,13 @@ function DiceRoller() {
       {rolling ? 'Zarlar Atılıyor...' : 'Zarları At'}
     </button>
     {results.length > 0 && !rolling && (
-      <div style={{ marginTop: '1.2rem', fontSize: '1.2rem', color: '#7c5c2b', fontFamily: 'MedievalSharp, serif', fontWeight: 'bold' }}>
+      <div style={{ marginTop: '1.2rem', fontSize: '1.2rem', color: '#b8b8b8', fontFamily: 'MedievalSharp, serif', fontWeight: 'bold' }}>
         <div style={{ marginBottom: '0.5rem', fontSize: '1.3rem' }}>Sonuçlar:</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.7rem' }}>
           {results.map((res, idx) => (
-            <div key={res.id} style={{ background: '#f7e7c1', border: '2px solid #a67c52', borderRadius: '10px', padding: '0.5rem 1.2rem', minWidth: '60px', boxShadow: '0 0 8px #7c5c2b44', marginBottom: '0.5rem' }}>
-              <span style={{ color: '#3e2c0b', fontSize: '1.1rem' }}>D{res.sides}: </span>
-              <span style={{ color: '#7c5c2b', fontSize: '1.3rem' }}>{res.value}</span>
+            <div key={res.id} style={{ background: '#23272a', border: '2px solid #444950', borderRadius: '10px', padding: '0.5rem 1.2rem', minWidth: '60px', boxShadow: '0 0 8px #18191c44', marginBottom: '0.5rem' }}>
+              <span style={{ color: '#e0e0e0', fontSize: '1.1rem' }}>D{res.sides}: </span>
+              <span style={{ color: '#b8b8b8', fontSize: '1.3rem' }}>{res.value}</span>
             </div>
           ))}
         </div>
