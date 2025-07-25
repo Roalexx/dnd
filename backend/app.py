@@ -7,6 +7,7 @@ from routes.character_detail import character_data_bp
 from routes.drop_down import sizes_bp, alignments_bp, classes_bp, races_bp
 from routes.equipments import equipment_bp
 from routes.class_levels import levels_bp
+from routes.char_info_for_battle import char_info_bp
 from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
 from flask_cors import CORS
@@ -50,6 +51,7 @@ app.register_blueprint(character_bp)
 app.register_blueprint(character_data_bp)
 app.register_blueprint(equipment_bp)
 app.register_blueprint(levels_bp)
+app.register_blueprint(char_info_bp)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useParams } from "react-router-dom";
 import DiceRoller from '../components/DiceRoller';
 
 import bg1 from "../assets/images/battle_comps/bgDesign/bg1.png";
@@ -27,6 +28,7 @@ const orbActivePaths = [orb1s, orb2s, orb3s, orb4s, orb5s];
 const bgPaths = [bg1, bg2, bg3, bg4, bg5];
 
 export default function Battle() {
+  const { id } = useParams(); // karakter id'si route'dan alınır
   const [selectedBg, setSelectedBg] = useState(0);
   const [hp, setHp] = useState(100);
   const maxHp = 100;
@@ -61,6 +63,10 @@ export default function Battle() {
         overflow: 'hidden'
       }}
     >
+       <div style={{ position: 'relative', zIndex: 1 }}>
+        <DiceRoller />
+      </div> 
+
       {/* Arka plan seçme butonları */}
       <div
         style={{
@@ -223,11 +229,6 @@ export default function Battle() {
         </button>
       </div>
 
-      {/* Zar atma paneli */}
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 340, zIndex: 6 }}>
-        <DiceRoller />
-      </div>
-
       {/* HP Ayarlama Popup */}
       {showHpModal && (
         <div
@@ -247,24 +248,29 @@ export default function Battle() {
         >
           <div
             style={{
-              background: 'linear-gradient(180deg, #e7d9c7 0%, #b6a89a 100%)',
-              borderRadius: 32,
+              background: 'radial-gradient(circle at 50% 30%, #23272a 0%, #18191c 100%)',
+              borderRadius: 24,
               padding: 32,
               minWidth: 320,
-              boxShadow: '0 4px 32px rgba(0,0,0,0.3)',
+              boxShadow: '0 0 40px #18191c88',
               position: 'relative',
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center'
+              alignItems: 'center',
+              border: '8px solid #23272a',
+              fontFamily: 'MedievalSharp, serif',
+              color: '#e0e0e0'
             }}
             onClick={e => e.stopPropagation()}
           >
             <div
               style={{
-                color: '#5A3333',
-                fontSize: 48,
-                fontFamily: 'Quintessential',
-                marginBottom: 24
+                color: '#e0e0e0',
+                fontSize: 40,
+                fontFamily: 'MedievalSharp, serif',
+                marginBottom: 24,
+                letterSpacing: '2px',
+                textShadow: '2px 2px 8px #23272a'
               }}
             >
               Can Ayarla
@@ -275,10 +281,14 @@ export default function Battle() {
                   width: 48,
                   height: 48,
                   fontSize: 32,
-                  background: '#FFE6B7',
-                  border: 'none',
+                  background: 'linear-gradient(90deg, #23272a 0%, #444950 100%)',
+                  color: '#e0e0e0',
+                  border: '2px solid #444950',
                   borderRadius: 12,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  fontFamily: 'MedievalSharp, serif',
+                  fontWeight: 'bold',
+                  boxShadow: '0 0 8px #18191c88'
                 }}
                 onClick={() => setModalHp(Math.max(0, modalHp - 5))}
               >-</button>
@@ -292,10 +302,11 @@ export default function Battle() {
                   width: 80,
                   fontSize: 32,
                   textAlign: 'center',
-                  border: '1px solid #b6a89a',
+                  border: '2px solid #444950',
                   borderRadius: 8,
-                  background: '#fff',
-                  color: '#5A3333'
+                  background: '#23272a',
+                  color: '#e0e0e0',
+                  fontFamily: 'MedievalSharp, serif'
                 }}
               />
               <button
@@ -303,10 +314,14 @@ export default function Battle() {
                   width: 48,
                   height: 48,
                   fontSize: 32,
-                  background: '#FFE6B7',
-                  border: 'none',
+                  background: 'linear-gradient(90deg, #23272a 0%, #444950 100%)',
+                  color: '#e0e0e0',
+                  border: '2px solid #444950',
                   borderRadius: 12,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  fontFamily: 'MedievalSharp, serif',
+                  fontWeight: 'bold',
+                  boxShadow: '0 0 8px #18191c88'
                 }}
                 onClick={() => setModalHp(Math.min(maxHp, modalHp + 5))}
               >+</button>
@@ -316,11 +331,14 @@ export default function Battle() {
                 marginTop: 32,
                 padding: '12px 32px',
                 fontSize: 24,
-                background: '#5A3333',
-                color: '#fff',
-                border: 'none',
+                background: 'linear-gradient(90deg, #23272a 0%, #444950 100%)',
+                color: '#e0e0e0',
+                border: '2px solid #444950',
                 borderRadius: 16,
-                cursor: 'pointer'
+                cursor: 'pointer',
+                fontFamily: 'MedievalSharp, serif',
+                fontWeight: 'bold',
+                boxShadow: '0 0 12px #18191c88'
               }}
               onClick={confirmHpModal}
             >
@@ -329,6 +347,9 @@ export default function Battle() {
           </div>
         </div>
       )}
+      <div style={{ position: "absolute", top: 12, left: 12, color: "#e0e0e0" }}>
+        Character ID: {id}
+      </div>
     </div>
   );
 }

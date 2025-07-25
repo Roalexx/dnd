@@ -50,8 +50,8 @@ function DiceRoller() {
     maxWidth: '480px',
     marginLeft: 'auto',
     marginRight: 'auto',
-    padding: results.length > 0 && !rolling ? '2rem 2rem 1rem 2rem' : '2rem',
-    minHeight: rolling ? '480px' : (results.length > 0 ? 'unset' : '100vh'),
+    padding: results.length > 0 || diceList.length > 0 ? '2rem 2rem 1rem 2rem' : '1.2rem',
+    minHeight: rolling ? '480px' : (results.length > 0 || diceList.length > 0 ? 'unset' : '220px'),
     transition: 'min-height 0.3s, padding-bottom 0.3s',
   }}>
     <h2 style={{

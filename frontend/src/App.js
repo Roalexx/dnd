@@ -17,6 +17,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardPage />} /> 
         <Route path="/characters/:id" element={<CharacterDetailPage />} />
         <Route path="/create-character" element={<CreateCharacter />} />
+        <Route path="/battle/:id" element={<Battle />} />
         <Route path="/dice" element={<DiceRoller />} />
         <Route path="/battle" element={<Battle />} />
       </Routes>

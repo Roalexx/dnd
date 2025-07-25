@@ -54,8 +54,25 @@ function Dashboard() {
         ) : (
           <ul>
             {ownedCharacters.map((char) => (
-              <li key={char.id} onClick={() => navigate(`/characters/${char.id}`)}>
-                {char.name} - Level {char.level}
+              <li key={char.id} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <span onClick={() => navigate(`/characters/${char.id}`)} style={{ cursor: "pointer" }}>
+                  {char.name} - Level {char.level}
+                </span>
+                <button
+                  style={{
+                    padding: "4px 12px",
+                    background: "linear-gradient(90deg, #23272a 0%, #444950 100%)",
+                    color: "#e0e0e0",
+                    border: "2px solid #444950",
+                    borderRadius: "8px",
+                    fontFamily: "MedievalSharp, serif",
+                    cursor: "pointer",
+                    fontWeight: "bold"
+                  }}
+                  onClick={() => navigate(`/battle/${char.id}`)}
+                >
+                  Join Battle
+                </button>
               </li>
             ))}
           </ul>
