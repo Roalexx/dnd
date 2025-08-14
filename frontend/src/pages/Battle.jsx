@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import DiceRoller from '../components/DiceRoller';
+import axios from "axios";
 
 import bg1 from "../assets/images/battle_comps/bgDesign/bg1.png";
 import bg2 from "../assets/images/battle_comps/bgDesign/bg2.png";
@@ -28,30 +29,38 @@ const orbActivePaths = [orb1s, orb2s, orb3s, orb4s, orb5s];
 const bgPaths = [bg1, bg2, bg3, bg4, bg5];
 
 export default function Battle() {
-  const { id } = useParams(); // karakter id'si route'dan alınır
+  const { id } = useParams();
   const [selectedBg, setSelectedBg] = useState(0);
-  const [hp, setHp] = useState(100);
-  const maxHp = 100;
+  const [hp, setHp] = useState();
+  const [maxHp, setMaxHp] = useState();
   const [showHpModal, setShowHpModal] = useState(false);
-  const [modalHp, setModalHp] = useState(hp);
+  const [modalHp, setModalHp] = useState();
+
+  useEffect(() => {
+    // API çağrısı iptal edildi
+    setHp(100);
+    setMaxHp(100);
+    setModalHp(100);
+  }, [id]);
 
   const bgUrl = bgPaths[selectedBg];
   const hpPercent = Math.max(0, Math.min(1, hp / maxHp));
 
-  // Modal açıldığında mevcut hp'yi göster
   const openHpModal = () => {
     setModalHp(hp);
     setShowHpModal(true);
   };
 
-  // Modal kapat
   const closeHpModal = () => setShowHpModal(false);
 
-  // Modalda onayla
   const confirmHpModal = () => {
     setHp(Math.max(0, Math.min(maxHp, modalHp)));
     setShowHpModal(false);
   };
+
+  if (hp === undefined || maxHp === undefined) {
+    return <div>Yükleniyor...</div>;
+  }
 
   return (
     <div
@@ -67,7 +76,6 @@ export default function Battle() {
         <DiceRoller />
       </div> 
 
-      {/* Arka plan seçme butonları */}
       <div
         style={{
           position: 'absolute',
@@ -102,7 +110,6 @@ export default function Battle() {
         ))}
       </div>
 
-      {/* Savaş menüsü en altta ortalanmış, birleşik tek parça */}
       <div
         style={{
           position: 'absolute',
@@ -118,7 +125,6 @@ export default function Battle() {
           gap: 0
         }}
       >
-        {/* Sol HP orb */}
         <div
           style={{
             position: 'relative',
@@ -129,7 +135,6 @@ export default function Battle() {
           }}
           onClick={openHpModal}
         >
-          {/* Bordo overlay en altta */}
           <div
             style={{
               position: 'absolute',
@@ -137,13 +142,12 @@ export default function Battle() {
               bottom: 0,
               width: '100%',
               height: `${hpPercent * 100}%`,
-              background: 'rgba(110, 20, 35, 0.85)', // daha opak ve bordo
+              background: 'rgba(110, 20, 35, 0.85)',
               borderRadius: '50%',
-              zIndex: 1, // EN ALTA ALINDI
+              zIndex: 1,
               transition: 'height 0.3s'
             }}
           />
-          {/* Orb PNG üstte */}
           <img
             src={hpOrb}
             alt="HP Orb"
@@ -156,7 +160,6 @@ export default function Battle() {
               zIndex: 2
             }}
           />
-          {/* HP yazısı en üstte */}
           <div
             style={{
               position: 'absolute',
@@ -179,7 +182,6 @@ export default function Battle() {
           </div>
         </div>
 
-        {/* Ortadaki slotlar */}
         <img
           src={slots}
           alt="Slots"
@@ -187,17 +189,16 @@ export default function Battle() {
             width: 816,
             height: 173,
             alignSelf: 'flex-end',
-            margin: '0' // boşluk kaldırıldı
+            margin: '0'
           }}
         />
 
-        {/* Sağ End Turn orb */}
         <button
           style={{
             position: 'relative',
             width: 308,
             height: 309,
-            marginLeft: 0, // boşluk kaldırıldı
+            marginLeft: 0,
             background: 'none',
             border: 'none',
             padding: 0,
@@ -229,7 +230,6 @@ export default function Battle() {
         </button>
       </div>
 
-      {/* HP Ayarlama Popup */}
       {showHpModal && (
         <div
           style={{
