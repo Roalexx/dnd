@@ -14,7 +14,6 @@ Amaç: DnD sınıfları, büyüler, ekipmanlar ve ırklar gibi verilerle **karak
 
 ## İçindekiler
 - [Özellikler](#özellikler)
-- [Canlı Görseller / Demo](#canlı-görseller--demo)
 - [Mimari](#mimari)
 - [Hızlı Başlangıç](#hızlı-başlangıç)
   - [Önkoşullar](#önkoşullar)
@@ -168,10 +167,6 @@ dnd/
 3. Test et, linter çalıştır.
 4. PR aç.
 
----
-
-## Lisans
-Lisans dosyası ekleyin (örn. MIT, Apache-2.0).
 
 ---
 
